@@ -1,0 +1,2 @@
+# No dependencies. This server uses only the Python standard library (3.7+).
+# Nothing to install — run it with any system python3.

@@ -1,0 +1,16 @@
+# Paths excluded from vault scans (vault-maintenance, vault-backlink-scan).
+# These are non-system files: duplicates, generated environments, test output.
+# One pattern per line.
+
+Tests/
+**/node_modules/
+**/__pycache__/
+*-workspace/
+
+# Human scratch space — brain-dump intake is messy by design (example links,
+# free-form status), so it is not linted as canonical vault content.
+Workshop-Human/
+
+# Write-once human-facing session reports — not part of the linked note graph,
+# so they should not be flagged as orphans by scans.
+Session-Reports/

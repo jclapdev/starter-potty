@@ -1,0 +1,445 @@
+/* ============================================================
+   TERROIR — An Obsidian Theme
+   Palette: Forest & Earth
+   ============================================================
+   #606c38  olive
+   #283618  forest
+   #fefae0  cream
+   #dda15e  tan
+   #bc6c25  rust
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Fira+Code:wght@400;500&display=swap');
+
+
+/* ────────────────────────────────────────────────────────────
+   LIGHT MODE
+   ──────────────────────────────────────────────────────────── */
+.theme-light {
+
+  /* ── Backgrounds ── */
+  --background-primary:                #fefae0;
+  --background-primary-alt:            #f8f3ce;
+  --background-secondary:              #ede7c0;
+  --background-secondary-alt:          #e2dab0;
+  --background-modifier-border:        #c4b87a;
+  --background-modifier-border-hover:  #a09858;
+  --background-modifier-border-focus:  #606c38;
+  --background-modifier-error:         #bc6c25;
+  --background-modifier-error-hover:   #9e5a1e;
+  --background-modifier-success:       #606c38;
+  --background-modifier-hover:         rgba(96, 108, 56, 0.08);
+  --background-modifier-active-hover:  rgba(96, 108, 56, 0.16);
+  --background-modifier-form-field:    #f8f3ce;
+  --background-modifier-form-field-highlighted: #fefae0;
+
+  /* ── Text ── */
+  --text-normal:        #283618;
+  --text-muted:         #5a6430;
+  --text-faint:         #8c8c58;
+  --text-on-accent:     #fefae0;
+  --text-error:         #bc6c25;
+  --text-success:       #283618;
+  --text-selection:     rgba(221, 161, 94, 0.38);
+  --text-accent:        #bc6c25;
+  --text-accent-hover:  #944e18;
+
+  /* ── Interactive ── */
+  --interactive-normal:        #ede7c0;
+  --interactive-hover:         #e2dab0;
+  --interactive-accent:        #606c38;
+  --interactive-accent-hsl:    96, 29%, 32%;
+  --interactive-accent-hover:  #4e5a2c;
+  --interactive-success:       #606c38;
+
+  /* ── Scrollbar ── */
+  --scrollbar-bg:               transparent;
+  --scrollbar-thumb-bg:         rgba(96, 108, 56, 0.22);
+  --scrollbar-active-thumb-bg:  rgba(96, 108, 56, 0.48);
+
+  /* ── Indentation ── */
+  --indentation-guide-color:        rgba(96, 108, 56, 0.18);
+  --indentation-guide-color-active: rgba(96, 108, 56, 0.48);
+
+  /* ── Tags ── */
+  --tag-color:            #fefae0;
+  --tag-background:       #606c38;
+  --tag-background-hover: #4e5a2c;
+  --tag-border-color:     transparent;
+  --tag-border-width:     0;
+  --tag-padding-x:        0.5em;
+  --tag-padding-y:        0.18em;
+  --tag-radius:           3px;
+  --tag-size:             0.8em;
+
+  /* ── Checkboxes ── */
+  --checkbox-radius:       3px;
+  --checkbox-color:        #606c38;
+  --checkbox-border-color: #606c38;
+  --checkbox-color-done:   #bc6c25;
+
+  /* ── Tables ── */
+  --table-border-color:          #c4b87a;
+  --table-header-background:     rgba(96, 108, 56, 0.12);
+  --table-row-alt-background:    rgba(254, 250, 224, 0.6);
+  --table-row-background-hover:  rgba(221, 161, 94, 0.14);
+
+  /* ── Callouts ── */
+  --callout-default:  96, 29%, 32%;
+  --callout-info:     200, 48%, 40%;
+  --callout-tip:      150, 35%, 35%;
+  --callout-warning:  35, 65%, 48%;
+  --callout-error:    25, 65%, 44%;
+  --callout-success:  96, 29%, 32%;
+  --callout-question: 200, 48%, 40%;
+  --callout-quote:    35, 40%, 50%;
+
+  /* ── Heading colors (light) ── */
+  --h1-color: #bc6c25;
+  --h2-color: #283618;
+  --h3-color: #606c38;
+  --h4-color: #283618;
+  --h5-color: #5a6430;
+  --h6-color: #5a6430;
+
+  /* ── Code (light) ── */
+  --code-background:    rgba(40, 54, 24, 0.07);
+  --code-normal:        #283618;
+  --code-comment:       #8c8c58;
+  --code-important:     #bc6c25;
+  --code-value:         #bc6c25;
+  --code-string:        #606c38;
+  --code-operator:      #283618;
+  --code-property:      #dda15e;
+  --code-keyword:       #bc6c25;
+
+  /* ── Blockquote ── */
+  --blockquote-border-color: #dda15e;
+  --blockquote-background-color: rgba(221, 161, 94, 0.1);
+
+  /* ── Links ── */
+  --link-color:         #bc6c25;
+  --link-color-hover:   #944e18;
+  --link-unresolved-color: rgba(188, 108, 37, 0.55);
+  --link-external-color: #606c38;
+  --link-external-color-hover: #4e5a2c;
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   DARK MODE
+   ──────────────────────────────────────────────────────────── */
+.theme-dark {
+
+  /* ── Backgrounds ── */
+  --background-primary:                #1b2710;
+  --background-primary-alt:            #202e13;
+  --background-secondary:              #283618;
+  --background-secondary-alt:          #324422;
+  --background-modifier-border:        #3e5228;
+  --background-modifier-border-hover:  #526c36;
+  --background-modifier-border-focus:  #dda15e;
+  --background-modifier-error:         #bc6c25;
+  --background-modifier-error-hover:   #d4824e;
+  --background-modifier-success:       #7a8a48;
+  --background-modifier-hover:         rgba(221, 161, 94, 0.09);
+  --background-modifier-active-hover:  rgba(221, 161, 94, 0.17);
+  --background-modifier-form-field:    #202e13;
+  --background-modifier-form-field-highlighted: #283618;
+
+  /* ── Text ── */
+  --text-normal:        #fefae0;
+  --text-muted:         #c8b888;
+  --text-faint:         #8a8060;
+  --text-on-accent:     #1b2710;
+  --text-error:         #d4824e;
+  --text-success:       #a0b860;
+  --text-selection:     rgba(221, 161, 94, 0.28);
+  --text-accent:        #dda15e;
+  --text-accent-hover:  #fefae0;
+
+  /* ── Interactive ── */
+  --interactive-normal:        #324422;
+  --interactive-hover:         #3e5228;
+  --interactive-accent:        #dda15e;
+  --interactive-accent-hsl:    33, 58%, 62%;
+  --interactive-accent-hover:  #bc6c25;
+  --interactive-success:       #7a8a48;
+
+  /* ── Scrollbar ── */
+  --scrollbar-bg:               transparent;
+  --scrollbar-thumb-bg:         rgba(221, 161, 94, 0.18);
+  --scrollbar-active-thumb-bg:  rgba(221, 161, 94, 0.42);
+
+  /* ── Indentation ── */
+  --indentation-guide-color:        rgba(221, 161, 94, 0.18);
+  --indentation-guide-color-active: rgba(221, 161, 94, 0.48);
+
+  /* ── Tags ── */
+  --tag-color:            #1b2710;
+  --tag-background:       #dda15e;
+  --tag-background-hover: #bc6c25;
+  --tag-border-color:     transparent;
+  --tag-border-width:     0;
+  --tag-padding-x:        0.5em;
+  --tag-padding-y:        0.18em;
+  --tag-radius:           3px;
+  --tag-size:             0.8em;
+
+  /* ── Checkboxes ── */
+  --checkbox-radius:       3px;
+  --checkbox-color:        #dda15e;
+  --checkbox-border-color: #dda15e;
+  --checkbox-color-done:   #bc6c25;
+
+  /* ── Tables ── */
+  --table-border-color:          #3e5228;
+  --table-header-background:     rgba(221, 161, 94, 0.14);
+  --table-row-alt-background:    rgba(40, 54, 24, 0.55);
+  --table-row-background-hover:  rgba(221, 161, 94, 0.1);
+
+  /* ── Callouts ── */
+  --callout-default:  33, 58%, 62%;
+  --callout-info:     200, 48%, 58%;
+  --callout-tip:      150, 35%, 52%;
+  --callout-warning:  35, 65%, 58%;
+  --callout-error:    25, 65%, 55%;
+  --callout-success:  96, 29%, 50%;
+  --callout-question: 200, 48%, 58%;
+  --callout-quote:    35, 40%, 58%;
+
+  /* ── Heading colors (dark) ── */
+  --h1-color: #dda15e;
+  --h2-color: #fefae0;
+  --h3-color: #a0b860;
+  --h4-color: #fefae0;
+  --h5-color: #c8b888;
+  --h6-color: #c8b888;
+
+  /* ── Code (dark) ── */
+  --code-background:    rgba(0, 0, 0, 0.25);
+  --code-normal:        #fefae0;
+  --code-comment:       #8a8060;
+  --code-important:     #dda15e;
+  --code-value:         #dda15e;
+  --code-string:        #a0b860;
+  --code-operator:      #fefae0;
+  --code-property:      #dda15e;
+  --code-keyword:       #dda15e;
+
+  /* ── Blockquote ── */
+  --blockquote-border-color: #dda15e;
+  --blockquote-background-color: rgba(221, 161, 94, 0.08);
+
+  /* ── Links ── */
+  --link-color:         #dda15e;
+  --link-color-hover:   #fefae0;
+  --link-unresolved-color: rgba(221, 161, 94, 0.5);
+  --link-external-color: #a0b860;
+  --link-external-color-hover: #c0d878;
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   TYPOGRAPHY — applies to both modes
+   ──────────────────────────────────────────────────────────── */
+body {
+  --font-interface:          'Inter', system-ui, -apple-system, sans-serif;
+  --font-text:               'Inter', system-ui, -apple-system, sans-serif;
+  --font-monospace:          'Fira Code', 'Consolas', monospace;
+
+  --font-interface-override: 'Inter';
+  --font-text-override:      'Inter';
+  --font-monospace-override: 'Fira Code';
+
+  --font-text-size:          16px;
+  --line-height-normal:      1.7;
+
+  /* Heading fonts */
+  --h1-font: 'Space Grotesk', system-ui, sans-serif;
+  --h2-font: 'Space Grotesk', system-ui, sans-serif;
+  --h3-font: 'Space Grotesk', system-ui, sans-serif;
+  --h4-font: 'Space Grotesk', system-ui, sans-serif;
+  --h5-font: 'Inter', system-ui, sans-serif;
+  --h6-font: 'Inter', system-ui, sans-serif;
+
+  /* Heading sizes */
+  --h1-size:   2em;
+  --h2-size:   1.6em;
+  --h3-size:   1.32em;
+  --h4-size:   1.12em;
+  --h5-size:   1em;
+  --h6-size:   0.9em;
+
+  /* Heading weights */
+  --h1-weight: 700;
+  --h2-weight: 600;
+  --h3-weight: 600;
+  --h4-weight: 500;
+  --h5-weight: 500;
+  --h6-weight: 500;
+
+  /* Heading line heights */
+  --h1-line-height: 1.15;
+  --h2-line-height: 1.2;
+  --h3-line-height: 1.25;
+  --h4-line-height: 1.3;
+
+  /* Letter spacing — tighter at large sizes, normal for small */
+  --h1-letter-spacing: -0.02em;
+  --h2-letter-spacing: -0.015em;
+  --h3-letter-spacing: -0.01em;
+  --h4-letter-spacing: -0.005em;
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   EDITOR — reading & source view refinements
+   ──────────────────────────────────────────────────────────── */
+
+/* Inline code */
+.cm-s-obsidian .cm-inline-code,
+code {
+  font-size: 0.88em;
+  padding: 0.15em 0.35em;
+  border-radius: 4px;
+  font-family: var(--font-monospace);
+}
+
+/* Blockquote */
+.markdown-rendered blockquote,
+.cm-blockquote-border {
+  border-left-color: var(--blockquote-border-color);
+}
+.markdown-rendered blockquote {
+  background-color: var(--blockquote-background-color);
+  border-radius: 0 4px 4px 0;
+  padding: 0.5em 1em;
+  margin: 1em 0;
+}
+
+/* Horizontal rule */
+.markdown-rendered hr {
+  border-color: var(--background-modifier-border);
+  opacity: 0.5;
+  margin: 2em 0;
+}
+
+/* Bold & italic color tints */
+.theme-light strong { color: #283618; }
+.theme-light em     { color: #606c38; }
+.theme-dark  strong { color: #fefae0; }
+.theme-dark  em     { color: #dda15e; }
+
+/* Table refinements */
+.markdown-rendered table {
+  border-radius: 6px;
+  overflow: hidden;
+}
+.markdown-rendered th {
+  font-family: var(--font-interface);
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-size: 0.82em;
+}
+
+/* Internal links — underline on hover */
+.markdown-rendered a.internal-link {
+  text-decoration: none;
+}
+.markdown-rendered a.internal-link:hover {
+  text-decoration: underline;
+}
+
+/* External links — subtle arrow */
+.markdown-rendered a.external-link::after {
+  opacity: 0.6;
+}
+
+/* ── Task list items ── */
+.markdown-rendered .task-list-item-checkbox {
+  border-radius: var(--checkbox-radius);
+}
+.markdown-rendered .task-list-item.is-checked {
+  opacity: 0.65;
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   UI — sidebar, title bar, file explorer
+   ──────────────────────────────────────────────────────────── */
+
+/* Active file in explorer */
+.nav-file-title.is-active {
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-radius: 4px;
+}
+
+/* Folder title weight */
+.nav-folder-title {
+  font-weight: 500;
+  font-family: var(--font-interface);
+}
+
+/* Tab bar active tab indicator */
+.workspace-tab-header.is-active::after {
+  background-color: var(--interactive-accent);
+}
+
+/* Search highlight */
+.search-result-file-matched-text {
+  background-color: rgba(221, 161, 94, 0.35);
+  border-radius: 2px;
+}
+
+/* Ribbon */
+.side-dock-ribbon {
+  border-color: var(--background-modifier-border);
+}
+
+/* Status bar */
+.status-bar {
+  font-family: var(--font-interface);
+  font-size: 0.78em;
+  opacity: 0.7;
+}
+
+/* Modal / prompt */
+.prompt-input {
+  font-family: var(--font-interface);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+.prompt-results .suggestion-item.is-selected {
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   GRAPH VIEW
+   ──────────────────────────────────────────────────────────── */
+.graph-view.color-fill            { color: #606c38; }
+.graph-view.color-fill-highlight  { color: #dda15e; }
+.graph-view.color-arrow           { color: #bc6c25; }
+.graph-view.color-circle          { color: #606c38; }
+.graph-view.color-line            { color: #c4b87a; }
+.graph-view.color-text            { color: #283618; }
+.graph-view.color-fill-unresolved { color: rgba(96, 108, 56, 0.35); }
+.theme-dark .graph-view.color-fill   { color: #7a8a48; }
+.theme-dark .graph-view.color-text   { color: #fefae0; }
+.theme-dark .graph-view.color-line   { color: #3e5228; }
+
+
+/* ────────────────────────────────────────────────────────────
+   FRONTMATTER / PROPERTIES
+   ──────────────────────────────────────────────────────────── */
+.metadata-container {
+  font-family: var(--font-interface);
+  font-size: 0.88em;
+}
+.metadata-property-key {
+  font-weight: 500;
+  opacity: 0.75;
+}

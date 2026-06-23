@@ -1,0 +1,1 @@
+Go immediately to /main.md for all instructions.
