@@ -62,9 +62,12 @@ The vault has a knowledge layer at `AI-Workshop/Projects/Wiki/`. The LLM writes 
 
 ---
 
-## Memory vs. main.md
+## Memory vs. main.md vs. base-rules.md
 
-When recommending whether something belongs in memory or `main.md`, always state the reasoning explicitly: Memory holds working style preferences (how to interact with the user). `main.md` holds behavioral rules (how to operate in the vault).
+When recommending where something belongs, state the reasoning explicitly:
+- **Memory** — working style preferences built up from interactions (how to work with the user). Persists across sessions, written by the AI.
+- **main.md** — personal identity settings (Who I Am, project-specific overrides). Rarely changes. Owned by the user.
+- **base-rules.md** (`Context/Systems/base-rules.md`) — behavioral rules and system guidelines (how to operate in the vault). Updates from the Starter. Do not edit for personal preferences.
 
 ---
 

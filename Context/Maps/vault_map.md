@@ -51,7 +51,8 @@ Main/
 - Open work list: `Context/History/open-work.md`
 - Activity log: `Context/History/log.md`
 - Content index: [[content_index]] → `Context/Maps/content_index.md`
-- User instructions: `main.md` (vault root)
+- Personal settings: `main.md` (vault root) — Who I Am, project-specific overrides
+- System rules: [[base-rules]] → `Context/Systems/base-rules.md` — behavioral rules, output preferences, language guidelines
 
 ---
 

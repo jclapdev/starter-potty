@@ -1,1 +1,2 @@
-Go immediately to /main.md for all instructions.
+@Context/Systems/base-rules.md
+@main.md
