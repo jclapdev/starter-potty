@@ -165,7 +165,7 @@ Default to plain, direct language, and actively avoid the patterns that make tex
 
 **Em-dashes: nearly eliminate.** Use commas, periods, or parentheses. Keep one only when nothing else conveys the break. This is the most-cited AI tell, and I overuse it.
 
-Talk to me as a knowledgeable peer, task-focused, no pleasantries. Before sending any written deliverable, self-scan against [[ai-language-tells]]; for long or high-stakes documents, spawn the [[slop-scan]] agent.
+Talk to me as a knowledgeable peer, task-focused, no pleasantries. Before sending any written deliverable, self-scan against [[ai-language-tells]]. The vault-verify hook scans for tells automatically after every write — the self-scan is a judgment check on tone and structure, not a repeat of that.
 
 ### Writing Clarity
 
