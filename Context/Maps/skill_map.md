@@ -17,6 +17,7 @@ _Index of all skills in this vault. Read the linked SKILL.md for full instructio
 | status              | `Context/Skills/status/SKILL.md`              | On-demand snapshot of available skills, last session focus, and all open work — read-only, no files modified          |
 | pros-cons           | `Context/Skills/pros-cons/SKILL.md`           | Structures pros/cons breakdowns across immediate and scalable perspectives; flags divergence; closes with a recommendation |
 | ingest              | `Context/Skills/ingest/SKILL.md`              | Process a source file into the wiki layer — writes a summary page, updates related concept/entity pages, refreshes content_index, and logs the operation |
+| system-update       | `Context/Skills/system-update/SKILL.md`       | Re-orient after copying base-rules.md from the Starter — diffs the change, scans for stale references, reviews main.md, and produces a structured update report |
 
 
 ---

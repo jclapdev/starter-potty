@@ -1,6 +1,6 @@
 # AI Language Tells: Catalog and Self-Check
 
-_Reference for the always-on "Language (No AI Tells)" rule in `main.md`. The rule there carries the short version; this file holds the full catalog with plain-word alternatives, the structural and tonal patterns, and the pre-send checklist. Load it on demand: when writing or reviewing a document, or when running the [[slop-scan]] agent. Not needed for every task._
+_Reference for the always-on "Language (No AI Tells)" rule in `base-rules.md`. The rule there carries the short version; this file holds the full catalog with plain-word alternatives, the structural and tonal patterns, and the pre-send checklist. Load it on demand: when writing or reviewing a document. Not needed for every task._
 
 _Policy: judgment guardrail, not a hard blocklist. Avoid these by default; a flagged word is fine when it is the accurate choice. Applies to all output, including casual chat. Em-dashes: nearly eliminate._
 
@@ -94,7 +94,7 @@ Run before delivering any written work:
 6. Check the ending: is it a summary that repeats the body? Cut.
 7. Read the first word of each paragraph: do several share the same transition? Vary them.
 
-For long or high-stakes documents, spawn the [[slop-scan]] agent to run this against a file in isolation.
+For long or high-stakes documents, run through the full checklist carefully before sending. The vault-verify hook catches word-level tells automatically; this checklist covers structural and tonal patterns it can't detect.
 
 ---
 
