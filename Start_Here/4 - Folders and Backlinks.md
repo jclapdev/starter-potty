@@ -16,7 +16,7 @@ The folders each have a job:
 | `Workshop-Human/` | Your inbox. Jot ideas here and point the AI at them |
 | `Projects/` | A note per project you're working on |
 | `Resources/` | Reference material you want to keep |
-| `Input/` | Drop files here for the AI to read or process |
+| `Resources/` | Reference material and files for the AI to read or process |
 | `Attachments/` | Images and files embedded inside your notes |
 | `AI-Workshop/` | The AI's own working area for outputs and scheduled jobs |
 
