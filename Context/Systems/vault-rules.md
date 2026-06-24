@@ -47,6 +47,21 @@ When vault structure changes (new skill, new folder, new system), update the rel
 
 **When a file deletion fails with "Operation not permitted", call `allow_cowork_file_delete` immediately** — do not surface the error to the user or ask them to handle it.
 
+## Wiki Layer
+
+The vault has a knowledge layer at `AI-Workshop/Projects/Wiki/`. The LLM writes and maintains it; the human reads it and directs what goes in.
+
+**Filing answers:** When a query produces a synthesis, comparison, or analysis worth keeping, file it as a wiki page rather than letting it disappear into chat history. Create `AI-Workshop/Projects/Wiki/<slug>.md`, add a row to `Context/Maps/content_index.md` under Analyses & Filed Answers, and append to `Context/History/log.md`:
+```
+## [<YYYY-MM-DD>] filed | <Title>
+```
+
+**The rule of thumb:** if you'd want to reference this answer in a future session, it belongs in the wiki.
+
+**Ingest:** Adding new raw sources to the wiki goes through the [[ingest]] skill (`Context/Skills/ingest/SKILL.md`). Don't write wiki pages from a source without running that process — it exists to ensure cross-references and index entries are maintained, not just the summary page.
+
+---
+
 ## Memory vs. main.md
 
 When recommending whether something belongs in memory or `main.md`, always state the reasoning explicitly: Memory holds working style preferences (how to interact with the user). `main.md` holds behavioral rules (how to operate in the vault).

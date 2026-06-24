@@ -12,6 +12,7 @@ Main/
 │   ├── Artifacts/        # HTML exports, rendered guides
 │   ├── vault-mcp/        # Vault navigation MCP server (stdlib, read-only) — the `vault` connector
 │   ├── Projects/         # The AI's per-project working data
+│   │   └── Wiki/         # LLM-owned knowledge layer (source summaries, concept pages, filed analyses)
 │   └── Scheduled/        # Scheduled task files
 │
 ├── Workshop-Human/       # Human-managed scratch space (brain-dump intake) — excluded from scans
@@ -48,6 +49,8 @@ Main/
 - Skill index: [[skill_map]] → `Context/Maps/skill_map.md`
 - Agent index: [[agent_map]] → `Context/Maps/agent_map.md`
 - Open work list: `Context/History/open-work.md`
+- Activity log: `Context/History/log.md`
+- Content index: [[content_index]] → `Context/Maps/content_index.md`
 - User instructions: `main.md` (vault root)
 
 ---
@@ -62,6 +65,7 @@ Main/
 | Session notes | `Context/History/` |
 | System diagnostics | `Context/Diagnostics/` |
 | Long-running session reports | `Session-Reports/` |
+| Wiki pages (source summaries, concept pages, filed analyses) | `AI-Workshop/Projects/Wiki/` |
 
 ---
 

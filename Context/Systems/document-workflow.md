@@ -23,6 +23,7 @@ Example: `Resources/Manuals/CONNECTORS/Crowdstrike_Falcon_Connector_Guide.pdf`
 
 - Artifacts and HTML exports → `AI-Workshop/Artifacts/`
 - Summaries and digests → `AI-Workshop/Projects/`
+- Wiki pages (source summaries, concept pages, entity pages, filed analyses) → `AI-Workshop/Projects/Wiki/`
 - Skills stay in `Context/Skills/`
 - System files stay in `Context/Systems/`
 

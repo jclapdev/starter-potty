@@ -113,7 +113,29 @@ This step folds in the periodic eval cycle: rather than a separate scheduled pas
 
 **Done when:** All skills checked. Stale eval candidates listed in the report with last-eval date (or "never evaluated").
 
-### 8. Fix automatically where safe
+### 8. Semantic wiki health check _(optional — run when explicitly requested or when the wiki layer has grown)_
+
+Scan `AI-Workshop/Projects/Wiki/` for content-level issues that structural maintenance won't catch:
+
+**Contradictions** — find pages that make conflicting claims about the same entity or concept. Flag them with both page names and the specific conflict.
+
+**Stale claims** — check recent `Context/History/log.md` entries for ingests; if a new source supersedes an older claim on an existing page, flag which page needs updating.
+
+**Orphan wiki pages** — pages in `AI-Workshop/Projects/Wiki/` that are not linked from any other page and do not appear in `Context/Maps/content_index.md`. Surface them; don't delete.
+
+**Missing concept pages** — concepts mentioned by name across multiple wiki pages but lacking their own dedicated page. Flag as stubs to create.
+
+**Missing cross-references** — two pages that clearly relate (share entities, reference the same events, make related claims) but don't link to each other.
+
+**Data gaps** — open questions or contradiction flags recorded in source-summary pages (the "Contradictions / Open Questions" section) that haven't been resolved. Surface them as candidates for new sources or research.
+
+Fix nothing automatically in this step. Output a flagged list only.
+
+**Done when:** All wiki pages checked. Findings listed under Flagged in the report.
+
+---
+
+### 9. Fix automatically where safe
 
 Safe fixes (make without asking):
 - Update a reference where the old name and new name are unambiguous (e.g. file was renamed with only one match in the vault)
@@ -126,15 +148,22 @@ Unsafe fixes (flag for user decision):
 - Missing files that are referenced but don't exist (may need to be created)
 - Data inconsistencies identified in the lint pass
 
-### 9. Report
+### 10. Report
 
 Output a summary with these sections:
 - **Fixed** — what was corrected automatically, with file names
-- **Flagged** — broken references, map discrepancies, and data issues requiring a decision, with enough context to act
+- **Flagged** — broken references, map discrepancies, data issues, and semantic health findings requiring a decision, with enough context to act
 - **Lint results** — structured note issues found and resolved, or confirmation that all sets passed
+- **Wiki health** — semantic issues found (only if Step 8 was run): contradictions, orphans, stale claims, data gaps
 - **Archive candidates** — handoff notes eligible to be collapsed, with reason (all items closed)
 - **Stale evals** — skills whose evals are overdue (only if Step 7 was run)
 - **Clean** — confirmation that maps and links checked out if no issues found
+
+If Step 8 was run, append to `Context/History/log.md`:
+```
+## [<YYYY-MM-DD>] lint | vault-maintenance semantic pass
+Issues found: <count> | Pages checked: <count>
+```
 
 ---
 

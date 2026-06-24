@@ -16,6 +16,7 @@ _Index of all skills in this vault. Read the linked SKILL.md for full instructio
 | theme-factory       | `Context/Skills/theme-factory/SKILL.md`       | Apply consistent professional styling (10 preset themes or custom) to artifacts — slides, docs, reports, HTML pages   |
 | status              | `Context/Skills/status/SKILL.md`              | On-demand snapshot of available skills, last session focus, and all open work — read-only, no files modified          |
 | pros-cons           | `Context/Skills/pros-cons/SKILL.md`           | Structures pros/cons breakdowns across immediate and scalable perspectives; flags divergence; closes with a recommendation |
+| ingest              | `Context/Skills/ingest/SKILL.md`              | Process a source file into the wiki layer — writes a summary page, updates related concept/entity pages, refreshes content_index, and logs the operation |
 
 
 ---
