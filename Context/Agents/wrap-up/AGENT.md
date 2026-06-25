@@ -134,14 +134,25 @@ Derive skills and agents used from `approved_changes` and `session_summary`. If 
 
 Exception: `main.md`. The Starter's `main.md` contains template placeholder content (not personal info). When syncing `main.md`, apply only structural changes (e.g. `@import` lines at the top) and preserve the Starter's placeholder body — do not overwrite `## Who I Am` or `## Project-Specific Overrides` placeholder text with personal content.
 
-**Git commit:** Stage and commit all changes made this session:
+**Git commit and push:** Commit and push both repos.
+
+Main vault:
 ```
 git -C {vault_path} add -A
 git -C {vault_path} commit -m "Wrap-up: {session_slug}"
+git -C {vault_path} push
 ```
-If the commit fails, include the error in output under "Git Issues" — do not abort.
 
-**Done when:** Starter counterparts are updated and git commit has run.
+Starter (always run if any Starter files were synced — it is a separate repo):
+```
+git -C {vault_path}/AI-Workshop/Projects/Starter add -A
+git -C {vault_path}/AI-Workshop/Projects/Starter commit -m "Wrap-up: {session_slug}"
+git -C {vault_path}/AI-Workshop/Projects/Starter push
+```
+
+If either commit or push fails, include the error in output under "Git Issues" — do not abort the other.
+
+**Done when:** Both repos are committed and pushed (or errors reported).
 
 ---
 
