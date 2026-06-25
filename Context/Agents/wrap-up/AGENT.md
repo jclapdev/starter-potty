@@ -128,6 +128,21 @@ Derive skills and agents used from `approved_changes` and `session_summary`. If 
 
 **Done when:** A usage row is appended for this session.
 
+### Step 7 — Starter Sync and Git Commit
+
+**Starter sync (conditional):** For each file in `approved_changes`, check whether a counterpart exists in the Starter template at `{vault_path}/AI-Workshop/Projects/Starter/`. If it does, apply the same change to the Starter counterpart. Do not skip this — the Starter should always reflect the current state of system files.
+
+Exception: `main.md`. The Starter's `main.md` contains template placeholder content (not personal info). When syncing `main.md`, apply only structural changes (e.g. `@import` lines at the top) and preserve the Starter's placeholder body — do not overwrite `## Who I Am` or `## Project-Specific Overrides` placeholder text with personal content.
+
+**Git commit:** Stage and commit all changes made this session:
+```
+git -C {vault_path} add -A
+git -C {vault_path} commit -m "Wrap-up: {session_slug}"
+```
+If the commit fails, include the error in output under "Git Issues" — do not abort.
+
+**Done when:** Starter counterparts are updated and git commit has run.
+
 ---
 
 ## Output
@@ -146,6 +161,12 @@ OPEN WORK
 
 HANDOFF
 [Path of the handoff file written]
+
+STARTER SYNC
+[Files updated in the Starter, or "none"]
+
+GIT
+[Commit hash and message, or error]
 
 FLAGGED ISSUES (if any)
 [Verbatim output from vault-maintenance that requires a decision]

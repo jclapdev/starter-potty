@@ -44,6 +44,15 @@ The agent handles Steps 2–5 (apply changes, vault-maintenance, update maps, up
 
 **Done when:** Wrap-up agent returns STATUS: completed or partial. Any flagged issues presented to user.
 
+### Step 3 — Git Push Confirmation
+
+After the wrap-up agent returns, ask the user: "The session is committed. Do you want to push to remote?"
+
+If yes: run `git push`.
+If no: close out.
+
+**Done when:** User has answered and push has run (or been declined).
+
 ---
 
 ## Constraints

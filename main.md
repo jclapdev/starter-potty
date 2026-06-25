@@ -1,6 +1,7 @@
-_This is your personal settings file, loaded alongside `Context/Systems/base-rules.md` via CLAUDE.md._
+@Context/Systems/base-rules.md
+@Context/Systems/vault-rules.md
 
-_Edit this file for your personal details and any custom rules specific to this vault. Leave `base-rules.md` alone — it updates from the Starter without touching this file._
+_This is your personal settings file. CLAUDE.md points here — this file is the portable hub that imports system rules and holds your personal context. Edit this file for your personal details and any custom rules. Leave `base-rules.md` alone — it updates from the Starter without touching this file._
 
 ---
 
