@@ -19,8 +19,8 @@ These phrases trigger specific behaviors immediately, no matter what else is in 
 
 When the user says "read your instructions" (or any clear equivalent at session start):
 
-1. Spawn the [[session-start]] agent (`Context/Agents/session-start/AGENT.md`) with `vault_path` set to this vault's root directory. It reads history, open-work, and capability maps in isolation — none of that content lands in main context.
-2. Surface the LAST SESSION and OPEN WORK sections from the agent's output.
+1. Call the `get_session_brief` tool (vault MCP server). It returns the latest session, open work, working-style preferences, and skill/agent capability lists in one call. No history, open-work, or map files land in main context.
+2. Surface the LAST SESSION and OPEN WORK sections from the brief.
 3. Stop. Wait for a task.
 
 **Do not run the navigation sequence at startup.** It fires only when a vault task begins.

@@ -6,7 +6,7 @@ _Governs how every working session starts, runs, and ends. Read this before star
 
 ## 1. Session Start
 
-Spawn the [[session-start]] agent (`Context/Agents/session-start/AGENT.md`) with `vault_path`. It reads the latest history file and open-work, then returns a structured orientation summary. Surface the Last Session and Open Work sections to the user before beginning new work.
+Call the `get_session_brief` tool (vault MCP server). It returns the latest session, open work, working-style preferences, and capability lists in one call. Surface the Last Session and Open Work sections to the user before beginning new work.
 
 Skip this if the session is clearly a one-off question with no vault work involved.
 

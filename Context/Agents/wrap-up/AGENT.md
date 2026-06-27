@@ -116,7 +116,9 @@ See open-work.md. Priority order as of this session:
 
 Keep it readable in under two minutes. Pure narrative — do not duplicate open-work.md item tracking here.
 
-**Done when:** Handoff file exists at the correct path with all four sections populated.
+**Link the work as you write.** Wrap the first mention of each vault note the session touched as a `[[wikilink]]`, so the handoff connects to that work in the graph. Use `[[note-name]]` for uniquely-named notes and `[[full/path|name]]` for shared basenames (`SKILL.md`, `AGENT.md`, `README.md`, `CLAUDE.md`). At minimum link every file in `approved_changes` that still exists; never link a note that does not exist. This keeps each handoff connected the day it is written, so the one-time history backfill never has to run again.
+
+**Done when:** Handoff file exists at the correct path with all four sections populated, and the notes the session touched are wikilinked.
 
 ### Step 6 — Record Session Usage
 

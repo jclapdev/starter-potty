@@ -27,7 +27,7 @@ When a task is heavy on file I/O, fully mechanical, or would benefit from isolat
 
 ## Start of Session
 
-Handled by the [[session-start]] agent via the startup sequence. Do not read history files inline.
+Handled by the startup sequence in `base-rules.md`, which calls `get_session_brief` directly. Do not read history files inline.
 
 ## Skills
 

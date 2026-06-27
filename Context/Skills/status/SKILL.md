@@ -11,15 +11,11 @@ description: On-demand read-only snapshot of everything — what skills are avai
 
 ## Process
 
-### Step 1 — Read Source Files
+### Step 1 — Get the Brief
 
-Read the following in order:
+Call `get_session_brief` from the vault MCP server (the `vault` connector). It returns last session, open work, preferences, and capabilities (skills + agents) in one call.
 
-1. `Context/Maps/skill_map.md` — full list of available skills
-2. The most recent file in `Context/History/` (sort descending by filename; exclude `open-work.md`) — last session's focus and next steps
-3. `Context/History/open-work.md` — all outstanding work
-
-**Done when:** All three sources are read and held in context.
+**Done when:** Brief returned successfully. If the tool is unavailable, fall back to reading `Context/Maps/skill_map.md`, the most recent file in `Context/History/` (exclude `open-work.md`), and `Context/History/open-work.md` separately.
 
 ### Step 2 — Report
 
@@ -28,16 +24,14 @@ Output a single structured report using exactly this format:
 ---
 **Skills available**
 - `skill-name` — one-line purpose
-- `skill-name` — one-line purpose
-_(list all skills from skill_map.md; no extra commentary)_
+_(list all from capabilities.skills; no extra commentary)_
 
-**Last session** _(skip this section if no handoff notes exist in Context/History/)_
-Two to four sentences covering: what was built, what decisions were made, and what the stated next steps were. Source: most recent handoff note.
+**Last session** _(skip if last_session is null)_
+Two to four sentences: what was built, decisions made, stated next steps. Source: last_session from the brief.
 
 **Open work**
 - **Item name** — one-sentence summary
-- **Item name** — one-sentence summary
-_(list all items from the Open section of open-work.md, in the order they appear)_
+_(all items from open_work, in order)_
 ---
 
 **Done when:** Report is presented. Stop — do not take any follow-up action unless the user asks.
@@ -48,4 +42,4 @@ _(list all items from the Open section of open-work.md, in the order they appear
 
 - Read-only. Do not write, edit, or move any file.
 - Do not add commentary, recommendations, or priorities unless the user asks.
-- If `Context/History/` has no handoff notes yet, skip the "Last session" section and say so.
+- If last_session is null, skip the "Last session" section and say so.

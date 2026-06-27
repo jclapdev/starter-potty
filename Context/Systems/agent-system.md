@@ -47,8 +47,6 @@ Context/Agents/
 │   └── AGENT.md
 ├── vault-maintenance/
 │   └── AGENT.md
-├── session-start/
-│   └── AGENT.md
 ├── backlink-scan/
 │   └── AGENT.md
 ├── skill-eval-runner/
@@ -69,7 +67,7 @@ Every AGENT.md declares:
 
 ```
 --- INPUTS ---
-vault_path: /Users/john/Desktop/Main
+vault_path: /path/to/your-vault
 [other parameters...]
 ```
 
@@ -106,11 +104,11 @@ Do not add agents to `skill_map.md` — agents and skills are tracked separately
 
 ---
 
-## Meta-Agent (Planned)
+## Agent Detector
 
-A future agent — the **agent-detector** — will monitor session work and proactively identify tasks that would benefit from being extracted into a new agent. It will analyze patterns: repeated heavy file I/O, multi-step mechanical processes that recur across sessions, tasks that consume disproportionate main-context tokens. When it identifies a candidate, it surfaces a recommendation with justification.
+The **agent-detector** (`Context/Agents/agent-detector/AGENT.md`) monitors session history to identify tasks that would benefit from becoming a dedicated sub-agent. It analyzes patterns: repeated heavy file I/O, multi-step mechanical processes that recur across sessions, tasks that consume disproportionate main-context tokens. When it identifies a candidate, it surfaces a recommendation with justification.
 
-See `open-work.md` for current status.
+Run on demand or periodically during vault maintenance.
 
 ---
 

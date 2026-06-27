@@ -7,9 +7,10 @@ _High-level structure of this vault. Use this to orient before writing to or sea
 ## Structure
 
 ```
-Main/
+YourVault/
 ├── AI-Workshop/          # AI-managed working directory (Claude writes here)
 │   ├── Artifacts/        # HTML exports, rendered guides
+│   ├── hooks/            # PostToolUse hooks (vault-verify runs on every file write)
 │   ├── vault-mcp/        # Vault navigation MCP server (stdlib, read-only) — the `vault` connector
 │   ├── Projects/         # The AI's per-project working data
 │   │   └── Wiki/         # LLM-owned knowledge layer (source summaries, concept pages, filed analyses)
@@ -17,26 +18,23 @@ Main/
 │
 ├── Workshop-Human/       # Human-managed scratch space (brain-dump intake) — excluded from scans
 │
-├── Session-Reports/      # Plain-English summaries of long-running sessions, for human review
-│
 ├── Attachments/          # File attachments (currently empty)
+├── Input/                # Drop files here for the AI to process
+├── Start_Here/           # Onboarding — read these first to get set up
 │
 ├── Context/
 │   ├── Agents/           # Sub-agent prompt files (one folder per agent) — see [[agent_map]]
-│   ├── Diagnostics/      # System efficiency reports and fix backlogs
 │   ├── History/          # Session notes + open-work.md (outstanding work)
 │   ├── Maps/             # vault_map.md, skill_map.md, agent_map.md, systems_map.md
 │   ├── Memory/           # Persistent memory files + MEMORY.md index
 │   ├── Skills/           # Skill instruction files (one folder per skill) — see [[skill_map]]
 │   └── Systems/          # System rule files (one per domain)
 │
-├── Tests/                # Skill eval workspaces and review output (excluded from scans)
 ├── Projects/             # Project notes (one .md per project)
-│
-└── Resources/            # Reference materials (USU theme, autodater assets, Claude Code vs. Cowork note)
+└── Resources/            # Reference materials
 ```
 
-> Skill and agent folders are intentionally not enumerated here. [[skill_map]] and [[agent_map]] are the source of truth for those lists — this map owns top-level structure only, so adding a skill or agent means editing one map, not two.
+> Skill and agent folders are not enumerated here. [[skill_map]] and [[agent_map]] are the source of truth for those lists.
 
 ---
 
@@ -60,12 +58,9 @@ Main/
 
 | Document Type | Location |
 |---|---|
-| Connector guides | `Projects/<Client>/Connector Documentation/` |
 | HTML artifacts | `AI-Workshop/Artifacts/` |
-| Summaries/digests | `AI-Workshop/Projects/` |
+| Summaries / digests | `AI-Workshop/Projects/` |
 | Session notes | `Context/History/` |
-| System diagnostics | `Context/Diagnostics/` |
-| Long-running session reports | `Session-Reports/` |
 | Wiki pages (source summaries, concept pages, filed analyses) | `AI-Workshop/Projects/Wiki/` |
 
 ---
@@ -73,17 +68,14 @@ Main/
 ## Note Status
 
 Project notes carry a `status:` field in YAML frontmatter, queried via the `vault` connector's
-`list_by_status` tool. Status is scoped to work that has a lifecycle — project notes in
-`Projects/` — not reference notes, system files, maps, memory, or history, which have no
-meaningful state and would only add noise to the query.
+`list_by_status` tool. Status is scoped to project notes in `Projects/` only.
 
 | Value | Meaning |
 |---|---|
 | `idea` | Captured, not started |
 | `active` | In progress now |
 | `blocked` | Can't proceed; waiting on an external dependency |
-| `needs-eval` | Built but awaiting validation (e.g. a skill pending an eval pass) |
+| `needs-eval` | Built but awaiting validation |
 | `done` | Complete; no open work |
 
-Human scratch space (`Workshop-Human/`) is excluded from scans via `Context/.vaultignore`, so
-brain-dump intake files never appear in status, broken-link, or orphan queries.
+Human scratch space (`Workshop-Human/`) is excluded from scans via `Context/.vaultignore`.

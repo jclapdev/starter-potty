@@ -61,8 +61,8 @@ Add this to `~/Library/Application Support/Claude/claude_desktop_config.json` (c
   "mcpServers": {
     "vault": {
       "command": "python3",
-      "args": ["/Users/john/Desktop/Main/AI-Workshop/vault-mcp/server.py"],
-      "env": { "VAULT_PATH": "/Users/john/Desktop/Main" }
+      "args": ["/path/to/your-vault/AI-Workshop/vault-mcp/server.py"],
+      "env": { "VAULT_PATH": "/path/to/your-vault" }
     }
   }
 }
@@ -77,7 +77,7 @@ That's the whole setup. `VAULT_PATH` is optional — if omitted, the server uses
 To confirm the tools work against your vault before registering:
 
 ```
-cd /Users/john/Desktop/Main/AI-Workshop/vault-mcp
+cd /path/to/your-vault/AI-Workshop/vault-mcp
 python3 -c "import server; print(server.find_skill_core('wrap up the session', 2))"
 python3 -c "import server; print(server.get_open_work_core())"
 ```
@@ -94,7 +94,7 @@ printf '%s\n' \
 
 ## How it fits the system
 
-The navigation sequence in `Context/Systems/vault-rules.md` already calls `find_skill` / `resolve_agent` for selection instead of loading whole maps. The remaining wiring is `session-start`: point it at `get_session_brief` instead of reading history + open-work + memory + maps separately (tracked in `open-work.md`). The maps stay as the human-readable source of truth; the server is the machine-readable query layer over them.
+The navigation sequence in `Context/Systems/vault-rules.md` already calls `find_skill` / `resolve_agent` for selection instead of loading whole maps. Startup now calls `get_session_brief` directly: one call returns the latest session, open work, preferences, and capability lists, replacing the old session-start agent that read history, open-work, memory, and maps separately. The maps stay as the human-readable source of truth; the server is the machine-readable query layer over them.
 
 After editing `server.py`, **restart Claude Desktop** — it loads the server once at startup, so new tools and fixes aren't live until it reconnects.
 
