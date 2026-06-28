@@ -41,6 +41,17 @@ Each skill lives in `Context/Skills/<skill-name>/SKILL.md`. Skill instructions e
 
 When vault structure changes (new skill, new folder, new system), update the relevant map file immediately. Maps are the source of truth — stale maps break navigation.
 
+## Archiving
+
+When a file is superseded and no longer part of the active system, archive it rather than leaving it in place or deleting it. This follows common Obsidian practice: a folder for the physical archive, a tag for state, a graph color group for visual distinction.
+
+1. Move it to a category-local `Archive/` folder (e.g. `Context/Agents/Archive/`, mirroring `Context/History/Archive/`).
+2. Add `#archived` (frontmatter `tags: [archived]`) so its state is queryable wherever it sits.
+3. In its registry (`agent_map`, `skill_map`), move the row to an `## Archived` section rather than deleting it, so the record survives.
+4. Repoint any `[[wikilinks]]` to the new path; leave historical prose mentions as-is.
+
+The graph has a color group on `tag:#archived` that greys archived notes, so they read differently from active ones at a glance. New users get this from the Starter.
+
 ## File Creation
 
 **Never create files outside the vault without asking first.** If a file needs to exist somewhere other than its natural vault location, ask where and why before creating it.

@@ -120,42 +120,6 @@ Keep it readable in under two minutes. Pure narrative — do not duplicate open-
 
 **Done when:** Handoff file exists at the correct path with all four sections populated, and the notes the session touched are wikilinked.
 
-### Step 6 — Record Session Usage
-
-Append one line to `{vault_path}/Context/Diagnostics/usage-log.md` (create it if missing) so token cost can be tracked over time:
-
-`| {session_date} | {session_slug} | <skills used> | <agents used> | <approx tokens if provided, else "-"> |`
-
-Derive skills and agents used from `approved_changes` and `session_summary`. If no token count was passed in, write "-" — the row still records what ran.
-
-**Done when:** A usage row is appended for this session.
-
-### Step 7 — Starter Sync and Git Commit
-
-**Starter sync (conditional):** For each file in `approved_changes`, check whether a counterpart exists in the Starter template at `{vault_path}/AI-Workshop/Projects/Starter/`. If it does, apply the same change to the Starter counterpart. Do not skip this — the Starter should always reflect the current state of system files.
-
-Exception: `main.md`. The Starter's `main.md` contains template placeholder content (not personal info). When syncing `main.md`, apply only structural changes (e.g. `@import` lines at the top) and preserve the Starter's placeholder body — do not overwrite `## Who I Am` or `## Project-Specific Overrides` placeholder text with personal content.
-
-**Git commit and push:** Commit and push both repos.
-
-Main vault:
-```
-git -C {vault_path} add -A
-git -C {vault_path} commit -m "Wrap-up: {session_slug}"
-git -C {vault_path} push
-```
-
-Starter (always run if any Starter files were synced — it is a separate repo):
-```
-git -C {vault_path}/AI-Workshop/Projects/Starter add -A
-git -C {vault_path}/AI-Workshop/Projects/Starter commit -m "Wrap-up: {session_slug}"
-git -C {vault_path}/AI-Workshop/Projects/Starter push
-```
-
-If either commit or push fails, include the error in output under "Git Issues" — do not abort the other.
-
-**Done when:** Both repos are committed and pushed (or errors reported).
-
 ---
 
 ## Output
@@ -174,12 +138,6 @@ OPEN WORK
 
 HANDOFF
 [Path of the handoff file written]
-
-STARTER SYNC
-[Files updated in the Starter, or "none"]
-
-GIT
-[Commit hash and message, or error]
 
 FLAGGED ISSUES (if any)
 [Verbatim output from vault-maintenance that requires a decision]
