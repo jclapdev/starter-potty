@@ -6,6 +6,16 @@ _[[Home]] · Back: [[4 - Folders and Backlinks]] · Next: [[6 - Next Steps]]_
 
 Obsidian is where *you* see the files. Now point your AI at the same folder so it can read and write them too. There are two ways. Start with the first.
 
+## First: run setup (one time)
+
+This registers the vault's helper servers and works on macOS, Windows, and Linux. You need Python installed (3.9 or newer). Open a terminal in this folder and run:
+
+```bash
+python AI-Workshop/setup.py
+```
+
+It installs nothing for the basic system and writes the config each Claude app needs, using your own machine's paths. If you want the optional knowledge-base search server (it downloads a local model and some libraries), run `python AI-Workshop/setup.py --with-kb` instead. You can skip this step to start chatting right away, but running it is what makes the `vault` connector and the auto-checks work. Restart Claude afterward.
+
 ## Option A: Claude desktop app (easiest)
 
 This is the no-terminal path, good for everyone.
