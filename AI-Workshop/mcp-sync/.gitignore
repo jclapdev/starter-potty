@@ -1,4 +1,3 @@
 # Generated per-machine by setup.py — never commit or ship in the Starter.
 servers.json
-servers.local.json
 *.bak

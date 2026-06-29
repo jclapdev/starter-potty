@@ -4,8 +4,7 @@ Windows, and Linux.
 
 Run it from the vault root with whatever Python you have:
 
-    python AI-Workshop/setup.py          # full system, including the knowledge base
-    python AI-Workshop/setup.py --no-kb  # skip the knowledge base (rarely needed)
+    python AI-Workshop/setup.py
 
 What it does, and why it makes the system portable:
 
@@ -14,13 +13,12 @@ What it does, and why it makes the system portable:
     no command name is assumed, an absolute interpreter path is written.
   - Resolves AI-Workshop/mcp-sync/servers.template.json (placeholders only, no
     machine paths) into servers.json with real paths for THIS machine.
-  - Merges optional personal servers from servers.local.json if present (kept out
-    of the shared Starter via .gitignore).
-  - Registers the servers in the two files the apps read: .mcp.json (Claude Code)
-    and the Claude Desktop config (OS-correct location), via sync.py.
+  - Registers the system's servers (vault, kb) in the two files the apps read:
+    .mcp.json (Claude Code) and the Claude Desktop config (OS-correct location),
+    via sync.py. Any other server already in those files is left alone.
   - Points the vault-verify hook at this machine's interpreter.
-  - Sets up the knowledge base by default: creates the kb-mcp virtualenv (Scripts
-    on Windows, bin on POSIX) and installs its libraries. Use --no-kb to skip it.
+  - Sets up the knowledge base: creates the kb-mcp virtualenv (Scripts on
+    Windows, bin on POSIX) and installs its libraries. It is part of the system.
 
 Nothing machine-specific is committed; everything is generated here, on the
 recipient's machine, from their own Python and paths.
@@ -39,7 +37,6 @@ VAULT = Path(__file__).resolve().parents[1]   # AI-Workshop/setup.py -> vault ro
 AIW = VAULT / "AI-Workshop"
 MCP_SYNC = AIW / "mcp-sync"
 TEMPLATE = MCP_SYNC / "servers.template.json"
-LOCAL = MCP_SYNC / "servers.local.json"
 SERVERS = MCP_SYNC / "servers.json"
 KB_DIR = AIW / "kb-mcp"
 CLAUDE_SETTINGS = VAULT / ".claude" / "settings.json"
@@ -80,20 +77,13 @@ def _apply(obj, subs):
     return obj
 
 
-def resolve_servers(include_kb: bool) -> dict:
+def resolve_servers() -> dict:
     if not TEMPLATE.exists():
         sys.exit("error: %s not found" % TEMPLATE)
     subs = _subs()
     servers = {}
     for name, spec in json.loads(TEMPLATE.read_text(encoding="utf-8")).items():
-        if name == "kb" and not include_kb:
-            continue
         servers[name] = _apply(spec, subs)
-    # Personal/local servers (not shipped in the Starter).
-    if LOCAL.exists():
-        for name, spec in json.loads(LOCAL.read_text(encoding="utf-8")).items():
-            servers[name] = _apply(spec, subs)
-        print("  merged personal servers from servers.local.json")
     return servers
 
 
@@ -224,8 +214,6 @@ def report_cowork_access() -> None:
 # --------------------------------------------------------------------------- #
 def main() -> int:
     ap = argparse.ArgumentParser(description="Set up this vault's AI system (cross-platform).")
-    ap.add_argument("--no-kb", action="store_true",
-                    help="Skip the knowledge base (rarely needed; it's part of the system by default).")
     ap.add_argument("--no-desktop", action="store_true",
                     help="Skip writing the Claude Desktop config (Claude Code only).")
     ap.add_argument("--no-desktop-shortcut", action="store_true",
@@ -235,14 +223,12 @@ def main() -> int:
     print("Vault: %s" % VAULT)
     print("Python: %s (%s)" % (sys.executable, platform.platform()))
 
-    if args.no_kb:
-        print("\nSkipping the knowledge base (--no-kb).")
-        kb_ok = False
-    else:
-        kb_ok = setup_kb()
+    kb_ok = setup_kb()
 
     print("\n== Generating machine-specific server config ==")
-    servers = resolve_servers(include_kb=kb_ok)
+    servers = resolve_servers()
+    if not kb_ok:
+        servers.pop("kb", None)  # install failed; don't register a broken connector
     SERVERS.write_text(json.dumps(servers, indent=2) + "\n", encoding="utf-8")
     print("  wrote %s (%s)" % (SERVERS.name, ", ".join(servers)))
 
@@ -265,9 +251,7 @@ def main() -> int:
     print("\nSetup complete.")
     print("Next: restart Claude Code and (if used) Claude Desktop so they load the servers.")
     print("In the Claude desktop app (Cowork), open this vault from the Desktop entry.")
-    if args.no_kb:
-        print("The knowledge base was skipped (--no-kb).")
-    elif not kb_ok:
+    if not kb_ok:
         print("The knowledge base didn't finish installing; re-run setup to try again.")
     return 0
 

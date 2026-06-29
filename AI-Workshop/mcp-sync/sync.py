@@ -84,38 +84,45 @@ def _warn_missing_commands(servers):
 
 
 def check():
+    """Confirm the system's servers (vault, kb) are present and correct in each
+    target. Any other server already in the config is the user's own and is
+    ignored."""
     servers = _canonical()
     drift = False
     for label, path in TARGETS:
         current = _load(path).get("mcpServers", {})
-        if current == servers:
+        missing = [k for k in servers if k not in current]
+        differs = [k for k in servers if k in current and current[k] != servers[k]]
+        if not missing and not differs:
             print("in sync: %s" % label)
         else:
             drift = True
-            cur_keys, can_keys = set(current), set(servers)
             print("DRIFT:   %s" % label)
-            if can_keys - cur_keys:
-                print("    missing: %s" % ", ".join(sorted(can_keys - cur_keys)))
-            if cur_keys - can_keys:
-                print("    extra:   %s" % ", ".join(sorted(cur_keys - can_keys)))
-            for k in can_keys & cur_keys:
-                if current[k] != servers[k]:
-                    print("    differs: %s" % k)
+            if missing:
+                print("    missing: %s" % ", ".join(sorted(missing)))
+            if differs:
+                print("    differs: %s" % ", ".join(sorted(differs)))
     return 1 if drift else 0
 
 
 def sync():
+    """Add/update the system's own servers in each target, and leave every other
+    server already there untouched."""
     servers = _canonical()
-    print("canonical servers: %s" % ", ".join(sorted(servers)))
+    print("system servers: %s" % ", ".join(sorted(servers)))
     _warn_missing_commands(servers)
     for label, path in TARGETS:
         data = _load(path)
         if path.exists():
             shutil.copy(str(path), str(path) + ".bak")
-        data["mcpServers"] = servers
+        mcp = data.get("mcpServers", {})
+        kept = [k for k in mcp if k not in servers]
+        mcp.update(servers)          # add/update ours; leave the rest alone
+        data["mcpServers"] = mcp
         path.parent.mkdir(parents=True, exist_ok=True)
         _dump(path, data)
-        print("wrote %s -> %s" % (", ".join(sorted(servers)), label))
+        note = (" (left alone: %s)" % ", ".join(sorted(kept))) if kept else ""
+        print("updated %s -> %s%s" % (", ".join(sorted(servers)), label, note))
     print("done. Restart Claude Code and Claude Desktop to load changes.")
     return 0
 

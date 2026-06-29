@@ -20,7 +20,7 @@ This registers the vault's helper servers and works on macOS, Windows, and Linux
 python AI-Workshop/setup.py
 ```
 
-It writes the config each Claude app needs, using your own machine's paths, and sets up the knowledge base (the first time this downloads about 1 GB, so give it a few minutes). Restart Claude afterward. In the rare case you want to skip the knowledge base, add `--no-kb` to that command.
+It writes the config each Claude app needs, using your own machine's paths, and sets up the knowledge base (the first time this downloads about 1 GB, so give it a few minutes). Restart Claude afterward.
 
 ## Option A: Claude desktop app (easiest)
 

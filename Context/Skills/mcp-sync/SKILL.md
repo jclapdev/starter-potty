@@ -21,34 +21,35 @@ The fix is one canonical, **machine-independent** template plus a generator. Do 
 
 ## Source of truth
 
-Three files in `AI-Workshop/mcp-sync/`:
+Two files in `AI-Workshop/mcp-sync/`:
 
 | File | Committed? | Role |
 |---|---|---|
-| `servers.template.json` | yes (shared) | The shared server set, using **placeholders** — no machine paths. `{{PYTHON}}`, `{{VAULT}}`, `{{VAULT_MCP_SERVER}}`, `{{KB_VENV_PYTHON}}`, `{{KB_SERVER}}`. |
-| `servers.local.json` | no (gitignored) | Personal servers for this machine only (any server you don't want shared). Same placeholder syntax. Never shipped in the Starter. |
+| `servers.template.json` | yes (shared) | The system's servers (vault, kb), using **placeholders** — no machine paths. `{{PYTHON}}`, `{{VAULT}}`, `{{VAULT_MCP_SERVER}}`, `{{KB_VENV_PYTHON}}`, `{{KB_SERVER}}`. |
 | `servers.json` | no (generated) | Resolved output for this machine, produced by `setup.py`. Don't edit by hand. |
 
-`AI-Workshop/setup.py` resolves template + local into `servers.json` with real paths for the current machine, then registers everything. It uses `sys.executable` (the Python you ran it with) as the interpreter, so there is no `python3`-vs-`python` assumption and no hardcoded path. This is what makes the Starter portable across macOS/Windows/Linux.
+`AI-Workshop/setup.py` resolves the template into `servers.json` with real paths for the current machine, then registers those servers. It uses `sys.executable` (the Python you ran it with) as the interpreter, so there is no `python3`-vs-`python` assumption and no hardcoded path. This is what makes the Starter portable across macOS/Windows/Linux.
+
+The sync only manages the system's own servers. Any other server already in a machine's config (a personal one the user added) is left exactly as it is — the system never removes or overwrites it.
 
 ## Workflow
 
 ### First-time setup on any machine
 ```bash
-python AI-Workshop/setup.py          # full system (vault + knowledge base)
-python AI-Workshop/setup.py --no-kb  # skip the knowledge base (rarely needed)
+python AI-Workshop/setup.py
 ```
-Generates `servers.json`, writes `.mcp.json` (Claude Code) and the OS-correct Claude Desktop config, and wires the vault-verify hook to this machine's interpreter. Re-running is safe and idempotent.
+Sets up the full system (vault + knowledge base), generates `servers.json`, writes the system's servers into `.mcp.json` (Claude Code) and the OS-correct Claude Desktop config (leaving any other servers there alone), and wires the vault-verify hook to this machine's interpreter. Re-running is safe and idempotent.
 
-### Add or change a server
-1. Shared server (everyone should get it): add its entry to `servers.template.json` using placeholders. Personal server (this machine only): add it to `servers.local.json`.
+### Add or change a system server (everyone gets it)
+1. Add or edit its entry in `servers.template.json` using placeholders.
 2. Re-run `python AI-Workshop/setup.py` to re-resolve and re-register.
 3. Tell the user to **restart Claude Code and Claude Desktop**. A new server in `.mcp.json` prompts for approval on first load — expected.
 
-If `servers.json` already holds the right resolved entries and you only need to re-propagate to the app configs (no template change), run `python AI-Workshop/mcp-sync/sync.py` directly.
+### A personal server on one machine
+Just add it to that machine's Claude config (or `.mcp.json`) yourself. The system's sync leaves servers it doesn't manage alone, so it won't touch or remove it.
 
-### Remove a server
-Delete its entry from `servers.template.json` (or `servers.local.json`), re-run `setup.py`. The sync replaces the whole `mcpServers` block in both targets, so removals propagate.
+### Remove a system server
+Delete its entry from `servers.template.json`, then edit it out of the machine's config (the sync adds and updates the system's servers but does not delete on its own).
 
 ### Check for drift (no writes)
 ```bash
@@ -63,4 +64,4 @@ Reports each target as `in sync` or `DRIFT` (listing missing/extra/differing ser
 ## Notes
 - `setup.py` and `sync.py` resolve the vault root relative to their own location, and `sync.py` picks the Claude Desktop config path per-OS (macOS/Windows/Linux), so both are path-portable.
 - `.mcp.json` is the project-scoped MCP file Claude Code is designed to read and does not rewrite — that is why registrations there stick where `settings.json` ones do not.
-- Never commit `servers.json` or `servers.local.json` — they hold machine-specific absolute paths. The `.gitignore` and the Starter build both exclude them.
+- Never commit `servers.json` — it holds machine-specific absolute paths. The `.gitignore` and the Starter build both exclude it.
