@@ -6,6 +6,10 @@ _[[Home]] · Back: [[4 - Folders and Backlinks]] · Next: [[6 - Next Steps]]_
 
 Obsidian is where *you* see the files. Now point your AI at the same folder so it can read and write them too. There are two ways. Start with the first.
 
+## Where to keep this folder
+
+Before connecting, make sure this folder lives in a plain folder directly inside your home folder, like `C:\Users\YourName\ClaudeVault` (Windows) or `~/ClaudeVault` (Mac). The Claude desktop app only accepts a project folder whose real location is inside your home folder, and it gets confused by folders that are synced or moved. Avoid **Desktop** and **Documents** if OneDrive or iCloud backs them up, and avoid external drives, otherwise you may see an "invalid folder" error. If you already hit that error, just move the folder into your home folder and pick it again.
+
 ## First: run setup (one time)
 
 This registers the vault's helper servers and works on macOS, Windows, and Linux. You need Python installed (3.9 or newer). Open a terminal in this folder and run:

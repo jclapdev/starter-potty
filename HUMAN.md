@@ -9,14 +9,15 @@ You see the files in Obsidian. Claude works in the same folder. Nothing is hidde
 ## Contents
 
 1. [The big idea](#the-big-idea)
-2. [Setup (one command)](#setup-one-command)
-3. [Two ways to run Claude](#two-ways-to-run-claude)
-4. [How a session works](#how-a-session-works)
-5. [The pieces](#the-pieces)
-6. [Day to day](#day-to-day)
-7. [Keeping it healthy](#keeping-it-healthy)
-8. [Sharing this system](#sharing-this-system)
-9. [Troubleshooting](#troubleshooting)
+2. [Where to put this folder](#where-to-put-this-folder)
+3. [Setup (one command)](#setup-one-command)
+4. [Two ways to run Claude](#two-ways-to-run-claude)
+5. [How a session works](#how-a-session-works)
+6. [The pieces](#the-pieces)
+7. [Day to day](#day-to-day)
+8. [Keeping it healthy](#keeping-it-healthy)
+9. [Sharing this system](#sharing-this-system)
+10. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -25,6 +26,19 @@ You see the files in Obsidian. Claude works in the same folder. Nothing is hidde
 One folder, two viewers. **Obsidian** is your window into the notes. **Claude** (in the desktop app or in the terminal) opens the same folder and can read and edit those notes, run small programs, and keep the system tidy. Because it is the same folder, anything Claude writes appears in Obsidian instantly, and anything you write is there for Claude next time.
 
 The system gives Claude a memory and a set of habits so it does not start cold every session. Those habits live in the `Context/` folder as plain text you can read.
+
+---
+
+## Where to put this folder
+
+Put this folder in a **plain folder directly inside your home folder**:
+
+- macOS: `~/ClaudeVault`
+- Windows: `C:\Users\YourName\ClaudeVault`
+
+Then open *that* folder in both Obsidian and Claude.
+
+Why this matters: the Claude desktop app (Cowork) only accepts a project folder whose real location is inside your home folder, and it gets tripped up by folders that are synced or relocated. The **Desktop** and **Documents** folders are often backed up by OneDrive (Windows) or iCloud (Mac), which can move their real location out from under your home folder, and **external drives** are outside it entirely. Any of those can cause an "invalid folder" error when you try to open the vault. A normal folder sitting right in your home folder avoids all of it. (Downloads usually works too, since it is rarely synced.)
 
 ---
 
@@ -135,6 +149,7 @@ The recipient does exactly one thing after unzipping: run `python AI-Workshop/se
 
 ## Troubleshooting
 
+- **"Invalid folder" / "outside your home directory" when picking the folder in the Claude desktop app.** Cowork only accepts a folder whose real location is inside your home folder, and it gets confused by synced or redirected folders. Move the vault to a plain folder directly inside your home folder (for example `C:\Users\YourName\ClaudeVault` on Windows or `~/ClaudeVault` on Mac) and pick that. Avoid Desktop and Documents if they are backed up by OneDrive or iCloud, and avoid external drives. See [Where to put this folder](#where-to-put-this-folder).
 - **"Claude can't see my files."** It is pointed at the wrong folder. Make sure the folder Claude opened is the same one open in Obsidian's title bar.
 - **"A connector isn't showing up."** Run `python AI-Workshop/setup.py` again, then fully restart the Claude app. New servers in Claude Code prompt for approval the first time, which is expected.
 - **"I got errors about installing something."** The basic setup installs nothing. If you ran `--with-kb` and the install failed, you can still use everything else; just run plain `python AI-Workshop/setup.py` to register the core server without the heavy parts.
