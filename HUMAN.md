@@ -17,7 +17,8 @@ You see the files in Obsidian. Claude works in the same folder. Nothing is hidde
 7. [Day to day](#day-to-day)
 8. [Keeping it healthy](#keeping-it-healthy)
 9. [Sharing this system](#sharing-this-system)
-10. [Troubleshooting](#troubleshooting)
+10. [Updating to a new version](#updating-to-a-new-version)
+11. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -145,6 +146,28 @@ You do not have to run these manually beyond saying "wrap up."
 This vault doubles as a shareable starter kit. The build that produces the shareable copy lives in `AI-Workshop/build-starter.py`; it strips out anything personal and machine-specific, leaving the system skeleton plus the setup tooling.
 
 The recipient does exactly one thing after unzipping: run `python AI-Workshop/setup.py`. Because none of the shared files contain absolute paths or assume a particular Python, it works the same on a fresh Windows, macOS, or Linux machine. The optional knowledge-base server is the only thing that installs libraries, and it is opt-in, so the default experience never fails on a missing dependency.
+
+---
+
+## Updating to a new version
+
+This is for machines that already run the system and just need the latest improvements. It does not start over and it does not touch your work.
+
+Run this from the vault folder:
+
+```
+python AI-Workshop/update.py
+```
+
+It downloads the latest system, saves a backup of the current system files, and replaces only the system parts: skills, systems, agents, the system maps, and the helper programs. Your projects, notes, history, memory, your `main.md`, and your machine settings are left exactly as they are. When it finishes, restart Claude.
+
+No internet on that machine? Update from a copy of the latest version instead:
+
+```
+python AI-Workshop/update.py --from new-version.zip
+```
+
+You do not need git for either one. The backups it makes are kept in `AI-Workshop/.update-backups/`.
 
 ---
 
