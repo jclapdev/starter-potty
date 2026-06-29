@@ -159,6 +159,15 @@ Run this from the vault folder:
 python AI-Workshop/update.py
 ```
 
+First time on an older machine that doesn't have `update.py` yet? Get it once, then run it:
+
+```
+curl -L -o AI-Workshop/update.py https://raw.githubusercontent.com/jclapdev/starter-potty/main/AI-Workshop/update.py
+python AI-Workshop/update.py
+```
+
+(Or open that link in a browser, save it into the `AI-Workshop` folder as `update.py`, then run the second line.) That first run pulls in the whole latest system.
+
 It downloads the latest system, saves a backup of the current system files, and replaces only the system parts: skills, systems, agents, the system maps, and the helper programs. Your projects, notes, history, memory, your `main.md`, and your machine settings are left exactly as they are. When it finishes, restart Claude.
 
 No internet on that machine? Update from a copy of the latest version instead:

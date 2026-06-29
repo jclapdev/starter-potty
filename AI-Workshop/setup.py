@@ -121,8 +121,9 @@ def setup_kb() -> None:
 # Hook wiring (vault-verify) with this machine's interpreter
 # --------------------------------------------------------------------------- #
 def wire_hooks() -> None:
-    hook_script = "AI-Workshop/hooks/vault-verify.py"  # relative; cwd is the vault root
-    cmd = '"%s" %s' % (sys.executable, hook_script)
+    # Full path so the hook works no matter what folder Claude runs it from.
+    hook_script = str(VAULT / "AI-Workshop" / "hooks" / "vault-verify.py")
+    cmd = '"%s" "%s"' % (sys.executable, hook_script)
     data = {}
     if CLAUDE_SETTINGS.exists():
         try:
