@@ -140,6 +140,80 @@ def wire_hooks() -> None:
 
 
 # --------------------------------------------------------------------------- #
+# Cowork access: real path must be inside home; give a Desktop entry point
+# --------------------------------------------------------------------------- #
+def _inside_home(path: Path) -> bool:
+    home = Path.home().resolve()
+    real = path.resolve()
+    return real == home or home in real.parents
+
+
+def desktop_dir() -> Path:
+    """The user's real Desktop folder, even if the OS has redirected it."""
+    if platform.system() == "Windows":
+        try:
+            out = subprocess.run(
+                ["powershell", "-NoProfile", "-Command",
+                 "[Environment]::GetFolderPath('Desktop')"],
+                capture_output=True, text=True, timeout=10)
+            p = out.stdout.strip()
+            if p:
+                return Path(p)
+        except Exception:
+            pass
+        return Path(os.environ.get("USERPROFILE", str(Path.home()))) / "Desktop"
+    return Path.home() / "Desktop"
+
+
+def make_desktop_shortcut() -> None:
+    """Put a Desktop entry that opens this vault, so it is reachable from the
+    Desktop on every machine. Cowork resolves the shortcut to the vault's real
+    path, which (being inside home) it accepts. No-op if the vault already lives
+    directly on the Desktop.
+    """
+    dd = desktop_dir()
+    if not dd.exists():
+        print("  (no Desktop folder found; skipping shortcut)")
+        return
+    try:
+        if VAULT.resolve().parent == dd.resolve():
+            print("  vault is already on the Desktop; nothing to add")
+            return
+    except OSError:
+        pass
+
+    name = VAULT.name
+    if platform.system() == "Windows":
+        lnk = dd / (name + ".lnk")
+        ps = ("$s=(New-Object -ComObject WScript.Shell).CreateShortcut('%s');"
+              "$s.TargetPath='%s';$s.Save()" % (str(lnk), str(VAULT)))
+        r = subprocess.run(["powershell", "-NoProfile", "-Command", ps])
+        print("  created Desktop shortcut: %s" % lnk if r.returncode == 0
+              else "  WARNING: could not create Desktop shortcut")
+    else:
+        link = dd / name
+        if link.is_symlink():
+            link.unlink()
+        elif link.exists():
+            print("  Desktop already has a '%s' entry; leaving it" % name)
+            return
+        os.symlink(VAULT, link)
+        print("  created Desktop alias: %s -> %s" % (link, VAULT))
+
+
+def report_cowork_access() -> None:
+    if _inside_home(VAULT):
+        print("  OK: this vault is inside your home folder, so Cowork can open it.")
+    else:
+        print("  ATTENTION: this vault's real location is OUTSIDE your home folder:")
+        print("      %s" % VAULT.resolve())
+        print("  Claude Cowork only opens folders whose real path is inside your")
+        print("  home folder. Move the whole vault into your home folder (for")
+        print("  example ~/%s) and run setup again. The Desktop shortcut step" % VAULT.name)
+        print("  will then give you Desktop access that works on every machine.")
+
+
+# --------------------------------------------------------------------------- #
 # Main
 # --------------------------------------------------------------------------- #
 def main() -> int:
@@ -148,6 +222,8 @@ def main() -> int:
                     help="Also install the knowledge-base (kb) server's dependencies.")
     ap.add_argument("--no-desktop", action="store_true",
                     help="Skip writing the Claude Desktop config (Claude Code only).")
+    ap.add_argument("--no-desktop-shortcut", action="store_true",
+                    help="Don't add a Desktop shortcut/alias to the vault.")
     args = ap.parse_args()
 
     print("Vault: %s" % VAULT)
@@ -172,8 +248,14 @@ def main() -> int:
     print("\n== Wiring hooks ==")
     wire_hooks()
 
+    print("\n== Desktop access ==")
+    report_cowork_access()
+    if not args.no_desktop_shortcut:
+        make_desktop_shortcut()
+
     print("\nSetup complete.")
     print("Next: restart Claude Code and (if used) Claude Desktop so they load the servers.")
+    print("In the Claude desktop app (Cowork), open this vault from the Desktop entry.")
     if not args.with_kb:
         print("The knowledge-base server was skipped. Run with --with-kb to enable it.")
     return 0

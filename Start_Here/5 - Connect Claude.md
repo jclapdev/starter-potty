@@ -8,7 +8,9 @@ Obsidian is where *you* see the files. Now point your AI at the same folder so i
 
 ## Where to keep this folder
 
-Before connecting, make sure this folder lives in a plain folder directly inside your home folder, like `C:\Users\YourName\ClaudeVault` (Windows) or `~/ClaudeVault` (Mac). The Claude desktop app only accepts a project folder whose real location is inside your home folder, and it gets confused by folders that are synced or moved. Avoid **Desktop** and **Documents** if OneDrive or iCloud backs them up, and avoid external drives, otherwise you may see an "invalid folder" error. If you already hit that error, just move the folder into your home folder and pick it again.
+Keep the `ClaudeVault` folder in your **home folder** (`~/ClaudeVault` on Mac, `C:\Users\YourName\ClaudeVault` on Windows). When you run setup in the next step, it automatically puts a **shortcut to the vault on your Desktop**, so you can open it from the Desktop and it will work on any machine. Open the vault through that Desktop shortcut.
+
+(This is because the Claude desktop app only opens a folder whose real location is inside your home folder. Some computers relocate the Desktop and Documents folders via OneDrive or iCloud, so a folder placed directly on the Desktop can be rejected. The shortcut sidesteps that for everyone. If you put the vault somewhere outside your home folder, setup will tell you.)
 
 ## First: run setup (one time)
 

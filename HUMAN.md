@@ -31,14 +31,15 @@ The system gives Claude a memory and a set of habits so it does not start cold e
 
 ## Where to put this folder
 
-Put this folder in a **plain folder directly inside your home folder**:
+Put the vault in your **home folder** (`~/ClaudeVault` on Mac, `C:\Users\YourName\ClaudeVault` on Windows), then run setup (next section). Setup automatically puts a **shortcut to the vault on your Desktop**, so you open it from the Desktop like any other folder, and it works on every machine.
 
-- macOS: `~/ClaudeVault`
-- Windows: `C:\Users\YourName\ClaudeVault`
+You do not have to think about any of this. The short version:
 
-Then open *that* folder in both Obsidian and Claude.
+1. Put the `ClaudeVault` folder in your home folder.
+2. Run `python AI-Workshop/setup.py`.
+3. Open the new **ClaudeVault** shortcut on your Desktop in both Obsidian and Claude.
 
-Why this matters: the Claude desktop app (Cowork) only accepts a project folder whose real location is inside your home folder, and it gets tripped up by folders that are synced or relocated. The **Desktop** and **Documents** folders are often backed up by OneDrive (Windows) or iCloud (Mac), which can move their real location out from under your home folder, and **external drives** are outside it entirely. Any of those can cause an "invalid folder" error when you try to open the vault. A normal folder sitting right in your home folder avoids all of it. (Downloads usually works too, since it is rarely synced.)
+Why it is done this way: the Claude desktop app (Cowork) only opens a folder whose real location is inside your home folder. On some computers the Desktop and Documents folders are quietly relocated by OneDrive or iCloud, so a vault placed directly on the Desktop can be rejected. Keeping the real folder in your home folder and pointing at it through a Desktop shortcut gives you the Desktop convenience while always satisfying that rule, no matter how the machine is configured. If you ever move the vault somewhere outside your home folder, setup will tell you and point you back.
 
 ---
 
@@ -149,7 +150,7 @@ The recipient does exactly one thing after unzipping: run `python AI-Workshop/se
 
 ## Troubleshooting
 
-- **"Invalid folder" / "outside your home directory" when picking the folder in the Claude desktop app.** Cowork only accepts a folder whose real location is inside your home folder, and it gets confused by synced or redirected folders. Move the vault to a plain folder directly inside your home folder (for example `C:\Users\YourName\ClaudeVault` on Windows or `~/ClaudeVault` on Mac) and pick that. Avoid Desktop and Documents if they are backed up by OneDrive or iCloud, and avoid external drives. See [Where to put this folder](#where-to-put-this-folder).
+- **"Invalid folder" / "outside your home directory" when picking the folder in the Claude desktop app.** The vault's real location is outside your home folder (often because it sits on a Desktop that OneDrive or iCloud has relocated, or on an external drive). Move the `ClaudeVault` folder into your home folder and run `python AI-Workshop/setup.py` again. Setup will confirm the location is valid and put a working shortcut on your Desktop. See [Where to put this folder](#where-to-put-this-folder).
 - **"Claude can't see my files."** It is pointed at the wrong folder. Make sure the folder Claude opened is the same one open in Obsidian's title bar.
 - **"A connector isn't showing up."** Run `python AI-Workshop/setup.py` again, then fully restart the Claude app. New servers in Claude Code prompt for approval the first time, which is expected.
 - **"I got errors about installing something."** The basic setup installs nothing. If you ran `--with-kb` and the install failed, you can still use everything else; just run plain `python AI-Workshop/setup.py` to register the core server without the heavy parts.
