@@ -19,6 +19,8 @@ _Index of all skills in this vault. Read the linked SKILL.md for full instructio
 | ingest              | `Context/Skills/ingest/SKILL.md`              | Process a source file into the wiki layer — writes a summary page, updates related concept/entity pages, refreshes content_index, and logs the operation |
 | system-update       | `Context/Skills/system-update/SKILL.md`       | Re-orient after copying base-rules.md from the Starter — diffs the change, scans for stale references, reviews main.md, and produces a structured update report |
 | mcp-sync            | `Context/Skills/mcp-sync/SKILL.md`            | Register, remove, or sync MCP servers from one canonical list (`AI-Workshop/mcp-sync/servers.json`) into the files Claude Code (`.mcp.json`) and Claude Desktop both read; includes a drift check |
+| publish-update      | `Context/Skills/publish-update/SKILL.md`      | Publish system changes to every machine: rebuild the Starter, check it, and push it plus the main vault |
+| remember            | `Context/Skills/remember/SKILL.md`            | Save a working-style preference into `Context/Memory/` so it carries across sessions |
 
 
 ---
