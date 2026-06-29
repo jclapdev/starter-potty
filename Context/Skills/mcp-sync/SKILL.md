@@ -35,10 +35,10 @@ Three files in `AI-Workshop/mcp-sync/`:
 
 ### First-time setup on any machine
 ```bash
-python AI-Workshop/setup.py            # core servers (vault); installs nothing
-python AI-Workshop/setup.py --with-kb  # also create the kb venv + install its deps
+python AI-Workshop/setup.py          # full system (vault + knowledge base)
+python AI-Workshop/setup.py --no-kb  # skip the knowledge base (rarely needed)
 ```
-Generates `servers.json`, writes `.mcp.json` (Claude Code) and the OS-correct Claude Desktop config, and wires the vault-verify hook to this machine's interpreter. Re-running is safe and idempotent (kb is kept if its venv already exists).
+Generates `servers.json`, writes `.mcp.json` (Claude Code) and the OS-correct Claude Desktop config, and wires the vault-verify hook to this machine's interpreter. Re-running is safe and idempotent.
 
 ### Add or change a server
 1. Shared server (everyone should get it): add its entry to `servers.template.json` using placeholders. Personal server (this machine only): add it to `servers.local.json`.

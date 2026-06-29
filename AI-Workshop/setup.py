@@ -4,8 +4,8 @@ Windows, and Linux.
 
 Run it from the vault root with whatever Python you have:
 
-    python AI-Workshop/setup.py            # core only (no installs)
-    python AI-Workshop/setup.py --with-kb  # also set up the knowledge-base server
+    python AI-Workshop/setup.py          # full system, including the knowledge base
+    python AI-Workshop/setup.py --no-kb  # skip the knowledge base (rarely needed)
 
 What it does, and why it makes the system portable:
 
@@ -19,8 +19,8 @@ What it does, and why it makes the system portable:
   - Registers the servers in the two files the apps read: .mcp.json (Claude Code)
     and the Claude Desktop config (OS-correct location), via sync.py.
   - Points the vault-verify hook at this machine's interpreter.
-  - With --with-kb: creates the kb-mcp virtualenv (Scripts on Windows, bin on
-    POSIX) and installs its requirements.
+  - Sets up the knowledge base by default: creates the kb-mcp virtualenv (Scripts
+    on Windows, bin on POSIX) and installs its libraries. Use --no-kb to skip it.
 
 Nothing machine-specific is committed; everything is generated here, on the
 recipient's machine, from their own Python and paths.
@@ -57,7 +57,7 @@ def venv_python(venv_dir: Path) -> Path:
 # --------------------------------------------------------------------------- #
 # Template resolution
 # --------------------------------------------------------------------------- #
-def _subs(with_kb: bool) -> dict:
+def _subs() -> dict:
     s = {
         "{{PYTHON}}": sys.executable,
         "{{VAULT}}": str(VAULT),
@@ -80,13 +80,10 @@ def _apply(obj, subs):
     return obj
 
 
-def resolve_servers(with_kb: bool) -> dict:
+def resolve_servers(include_kb: bool) -> dict:
     if not TEMPLATE.exists():
         sys.exit("error: %s not found" % TEMPLATE)
-    subs = _subs(with_kb)
-    # Include kb if explicitly requested OR already installed — so re-running
-    # setup.py without the flag never silently drops an existing kb server.
-    include_kb = with_kb or venv_python(KB_DIR / ".venv").exists()
+    subs = _subs()
     servers = {}
     for name, spec in json.loads(TEMPLATE.read_text(encoding="utf-8")).items():
         if name == "kb" and not include_kb:
@@ -103,18 +100,26 @@ def resolve_servers(with_kb: bool) -> dict:
 # --------------------------------------------------------------------------- #
 # kb-mcp dependency install
 # --------------------------------------------------------------------------- #
-def setup_kb() -> None:
-    print("\n== Setting up kb-mcp (knowledge base) ==")
+def setup_kb() -> bool:
+    """Set up the knowledge base. Returns True on success. A failure here never
+    stops the rest of setup; the user can re-run to retry."""
+    print("\n== Setting up the knowledge base (kb) ==")
     venv = KB_DIR / ".venv"
     vpy = venv_python(venv)
-    if not vpy.exists():
-        print("  creating virtualenv %s" % venv)
-        subprocess.run([sys.executable, "-m", "venv", str(venv)], check=True)
-    req = KB_DIR / "requirements.txt"
-    print("  installing requirements (this can take a few minutes the first time)")
-    subprocess.run([str(vpy), "-m", "pip", "install", "--upgrade", "pip"], check=True)
-    subprocess.run([str(vpy), "-m", "pip", "install", "-r", str(req)], check=True)
-    print("  kb-mcp ready.")
+    try:
+        if not vpy.exists():
+            print("  creating virtualenv %s" % venv)
+            subprocess.run([sys.executable, "-m", "venv", str(venv)], check=True)
+        req = KB_DIR / "requirements.txt"
+        print("  installing libraries (first time downloads ~1 GB, can take a few minutes)")
+        subprocess.run([str(vpy), "-m", "pip", "install", "--upgrade", "pip"], check=True)
+        subprocess.run([str(vpy), "-m", "pip", "install", "-r", str(req)], check=True)
+        print("  knowledge base ready.")
+        return True
+    except Exception as exc:  # noqa: BLE001
+        print("  WARNING: the knowledge base didn't finish installing (%s)." % exc)
+        print("  Everything else is set up. Run setup again to retry the knowledge base.")
+        return False
 
 
 # --------------------------------------------------------------------------- #
@@ -219,8 +224,8 @@ def report_cowork_access() -> None:
 # --------------------------------------------------------------------------- #
 def main() -> int:
     ap = argparse.ArgumentParser(description="Set up this vault's AI system (cross-platform).")
-    ap.add_argument("--with-kb", action="store_true",
-                    help="Also install the knowledge-base (kb) server's dependencies.")
+    ap.add_argument("--no-kb", action="store_true",
+                    help="Skip the knowledge base (rarely needed; it's part of the system by default).")
     ap.add_argument("--no-desktop", action="store_true",
                     help="Skip writing the Claude Desktop config (Claude Code only).")
     ap.add_argument("--no-desktop-shortcut", action="store_true",
@@ -230,11 +235,14 @@ def main() -> int:
     print("Vault: %s" % VAULT)
     print("Python: %s (%s)" % (sys.executable, platform.platform()))
 
-    if args.with_kb:
-        setup_kb()
+    if args.no_kb:
+        print("\nSkipping the knowledge base (--no-kb).")
+        kb_ok = False
+    else:
+        kb_ok = setup_kb()
 
     print("\n== Generating machine-specific server config ==")
-    servers = resolve_servers(with_kb=args.with_kb)
+    servers = resolve_servers(include_kb=kb_ok)
     SERVERS.write_text(json.dumps(servers, indent=2) + "\n", encoding="utf-8")
     print("  wrote %s (%s)" % (SERVERS.name, ", ".join(servers)))
 
@@ -257,8 +265,10 @@ def main() -> int:
     print("\nSetup complete.")
     print("Next: restart Claude Code and (if used) Claude Desktop so they load the servers.")
     print("In the Claude desktop app (Cowork), open this vault from the Desktop entry.")
-    if not args.with_kb:
-        print("The knowledge-base server was skipped. Run with --with-kb to enable it.")
+    if args.no_kb:
+        print("The knowledge base was skipped (--no-kb).")
+    elif not kb_ok:
+        print("The knowledge base didn't finish installing; re-run setup to try again.")
     return 0
 
 

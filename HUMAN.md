@@ -54,13 +54,9 @@ Then, from this folder, run:
 python AI-Workshop/setup.py
 ```
 
-That is the whole setup. It works on macOS, Windows, and Linux because it uses the exact Python you just ran it with, figures out your own paths, and writes the config files each Claude app needs. It does not install anything for the basic system.
+That is the whole setup. It works on macOS, Windows, and Linux because it uses the exact Python you just ran it with, figures out your own paths, and writes the config files each Claude app needs. It also sets up the knowledge base, which the first time downloads about 1 GB of libraries, so give it a few minutes.
 
-If you want the optional knowledge-base search server (heavier: it downloads a local AI model and some libraries), run:
-
-```bash
-python AI-Workshop/setup.py --with-kb
-```
+In the rare case you want to skip the knowledge base, run `python AI-Workshop/setup.py --no-kb`.
 
 After setup, restart Claude. That is it. See [Two ways to run Claude](#two-ways-to-run-claude) for how to point Claude at this folder.
 
@@ -111,7 +107,7 @@ Everything Claude uses to stay consistent lives in `Context/`. You rarely edit t
 The engines that make this fast live in `AI-Workshop/`:
 
 - **`vault-mcp/`** — the navigation server (the `vault` connector). Pure Python standard library, nothing to install. It lets Claude look up skills, search notes, and check links without loading whole files.
-- **`kb-mcp/`** — the optional knowledge-base server (the `kb` connector). Adds semantic search over a body of notes. Off by default because it is heavier; turn it on with `setup.py --with-kb`.
+- **`kb-mcp/`** — the knowledge base (the `kb` connector). Adds search by meaning over your notes. Set up by default; skip it with `setup.py --no-kb`.
 - **`mcp-sync/`** — keeps those servers registered in both Claude apps from one shared list. `setup.py` uses it.
 - **`hooks/`** — small checks that run automatically when Claude writes a file (for example, flagging a broken link right away).
 
@@ -145,7 +141,7 @@ You do not have to run these manually beyond saying "wrap up."
 
 This vault doubles as a shareable starter kit. The build that produces the shareable copy lives in `AI-Workshop/build-starter.py`; it strips out anything personal and machine-specific, leaving the system skeleton plus the setup tooling.
 
-The recipient does exactly one thing after unzipping: run `python AI-Workshop/setup.py`. Because none of the shared files contain absolute paths or assume a particular Python, it works the same on a fresh Windows, macOS, or Linux machine. The optional knowledge-base server is the only thing that installs libraries, and it is opt-in, so the default experience never fails on a missing dependency.
+The recipient does exactly one thing after unzipping: run `python AI-Workshop/setup.py`. Because none of the shared files contain absolute paths or assume a particular Python, it works the same on a fresh Windows, macOS, or Linux machine. That run also sets up the knowledge base, which downloads about 1 GB of libraries the first time. If that download ever fails, the rest of the system still works and re-running setup finishes it.
 
 ---
 
@@ -185,7 +181,7 @@ You do not need git for either one. The backups it makes are kept in `AI-Worksho
 - **"Invalid folder" / "outside your home directory" when picking the folder in the Claude desktop app.** The vault's real location is outside your home folder (often because it sits on a Desktop that OneDrive or iCloud has relocated, or on an external drive). Move the `ClaudeVault` folder into your home folder and run `python AI-Workshop/setup.py` again. Setup will confirm the location is valid and put a working shortcut on your Desktop. See [Where to put this folder](#where-to-put-this-folder).
 - **"Claude can't see my files."** It is pointed at the wrong folder. Make sure the folder Claude opened is the same one open in Obsidian's title bar.
 - **"A connector isn't showing up."** Run `python AI-Workshop/setup.py` again, then fully restart the Claude app. New servers in Claude Code prompt for approval the first time, which is expected.
-- **"I got errors about installing something."** The basic setup installs nothing. If you ran `--with-kb` and the install failed, you can still use everything else; just run plain `python AI-Workshop/setup.py` to register the core server without the heavy parts.
+- **"I got errors about installing something."** That is the knowledge base download (about 1 GB). The rest of the system still works without it. Run `python AI-Workshop/setup.py` again to retry, or `python AI-Workshop/setup.py --no-kb` to set up without it.
 - **"The apps disagree on what's connected."** Run `python AI-Workshop/mcp-sync/sync.py --check` to see the difference, then `python AI-Workshop/setup.py` to fix it.
 
 ---
