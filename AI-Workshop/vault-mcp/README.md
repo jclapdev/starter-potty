@@ -52,25 +52,17 @@ Ranking is BM25. The two selector tools read the live `Skills/` and `Agents/` fo
 
 The server uses **only the Python standard library** (Python 3.7+), so there is **no venv and no `pip install`**. Any system `python3` runs it.
 
-## Register in Claude Desktop
+## Register it
 
-Add this to `~/Library/Application Support/Claude/claude_desktop_config.json` (create the `mcpServers` object if it isn't there), then fully quit and reopen Claude Desktop:
+Run the cross-platform setup from the vault root; it registers this server in both Claude Code and Claude Desktop with the correct paths for your machine:
 
-```json
-{
-  "mcpServers": {
-    "vault": {
-      "command": "python3",
-      "args": ["/path/to/your-vault/AI-Workshop/vault-mcp/server.py"],
-      "env": { "VAULT_PATH": "/path/to/your-vault" }
-    }
-  }
-}
+```bash
+python AI-Workshop/setup.py
 ```
 
-That's the whole setup. `VAULT_PATH` is optional — if omitted, the server uses the repo root two levels above `server.py` — but setting it explicitly is safest.
+That writes the `vault` entry (and any others) into `.mcp.json` and the OS-correct Claude Desktop config, using the exact Python you ran setup with, then you restart the apps. You do not edit any config by hand, and there is no `python3`-vs-`python` problem to work around. See the root `HUMAN.md` for the full picture.
 
-**If Claude Desktop reports it can't find `python3`:** open Terminal, run `which python3`, and paste that full path in place of `"python3"` in the `command` field (for example `/opt/homebrew/bin/python3` or `/usr/bin/python3`).
+`VAULT_PATH` is set for you by setup; if you ever run the server directly it defaults to the repo root two levels above `server.py`.
 
 ## Quick check (optional)
 
