@@ -58,6 +58,15 @@ The graph has a color group on `tag:#archived` that greys archived notes, so the
 
 **When a file deletion fails with "Operation not permitted", call `allow_cowork_file_delete` immediately** — do not surface the error to the user or ask them to handle it.
 
+## Before Deleting or Restructuring
+
+Before deleting, moving, or restructuring any system file or folder, do two checks first:
+
+1. **Understand the design.** Load the relevant source-of-truth (latest handoff, plans, the maps, and any index file like `content_index.md`) and confirm how the piece is actually used. Do not act on an assumption about how the system works, verify it.
+2. **Check what references it.** Grep the vault for the path before removing it. A file being clean and pushed does not mean it is unused, a folder can be load-bearing for skills, agents, hooks, or scheduled tasks that reference it by path.
+
+"Is it committed and safe to delete?" is the wrong question. "What breaks if this is gone?" is the right one.
+
 ## Wiki Layer
 
 The vault has a knowledge layer at `AI-Workshop/Projects/Wiki/`. The LLM writes and maintains it; the human reads it and directs what goes in.
