@@ -2,3 +2,8 @@ data/
 .venv/
 __pycache__/
 *.pyc
+
+# Machine-local ingestion staging — can hold 100s of GB; never commit.
+# Keep the folder (.gitkeep) but ignore whatever is dropped in it.
+sources/*
+!sources/.gitkeep

@@ -19,7 +19,6 @@ Writes the session handoff note to `Context/History/`. Separates the act of synt
 | `session_slug` | string | Short kebab-case label for the filename (e.g. `agent-architecture-build`) |
 | `what_was_built` | string | Narrative description of files created, changed, and why |
 | `decisions_made` | string | Key decisions and the reasoning behind them |
-| `in_progress` | string | Anything half-built or explicitly flagged as incomplete, or "Nothing half-built" |
 | `next_steps` | string | Top 3–5 open items from open-work.md, in priority order |
 
 ---
@@ -50,12 +49,6 @@ Assemble the note using the template below. Use the inputs verbatim where provid
 ## Decisions Made
 
 {decisions_made}
-
----
-
-## In Progress
-
-{in_progress}
 
 ---
 

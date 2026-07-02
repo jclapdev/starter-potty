@@ -5,7 +5,7 @@ description: Writes an end-of-session handoff note and reads it at session start
 
 # Skill: Session Handoff
 
-**Purpose:** At the end of a working session, write a handoff note to `Context/History/` capturing what was built, what's in progress, and any decisions that aren't obvious from the files alone. At the start of a new session, read the most recent handoff note to start warm.
+**Purpose:** At the end of a working session, write a handoff note to `Context/History/` capturing what was built and any decisions that aren't obvious from the files alone. At the start of a new session, read the most recent handoff note to start warm.
 
 ---
 
@@ -32,9 +32,6 @@ description: Writes an end-of-session handoff note and reads it at session start
    ### Decisions Made
    Any choices made during the session that aren't self-evident from reading the files — naming conventions chosen, approaches rejected, tradeoffs accepted.
 
-   ### In Progress
-   Anything started but not finished. Be specific — "SKILL.md for ipp-usage is empty, pending use case definition."
-
    ### Next Steps
    Concrete actions for the next session, if any were identified.
 
@@ -46,7 +43,7 @@ description: Writes an end-of-session handoff note and reads it at session start
 
 1. List files in `Context/History/` sorted by date.
 2. Read the most recent one.
-3. If "In Progress" or "Next Steps" sections are present, flag them to the user before starting the new task.
+3. If a "Next Steps" section is present, flag it to the user before starting the new task.
 
 ---
 

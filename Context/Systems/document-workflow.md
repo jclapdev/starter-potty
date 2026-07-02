@@ -17,7 +17,7 @@ After creating or significantly editing any markdown document in this vault, run
 
 When a skill references a source file (PDF, doc, txt), use the real relative path from the vault root — not an Obsidian wikilink. Wikilinks are for notes, not source files.
 
-Example: `Resources/Manuals/CONNECTORS/Crowdstrike_Falcon_Connector_Guide.pdf`
+Example: `Reference/Manuals/CONNECTORS/Crowdstrike_Falcon_Connector_Guide.pdf`
 
 ## 3. Output Location Rule
 

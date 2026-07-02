@@ -1,6 +1,6 @@
 ---
 name: ingest
-description: Process a new source into the vault's knowledge layer. Trigger when the user says "ingest [file/topic]", "process this source", "add this to the wiki", "file this", or drops a file in Resources/ and asks Claude to work with it. Also trigger when the user wants to compile research notes, a document, or a reference into the vault so it's searchable and cross-referenced. Ingest reads the source, extracts entities and concepts, writes a summary page, updates related wiki pages, refreshes the content index, and logs the operation — so each source compounds the vault rather than disappearing into chat.
+description: Process a new source into the vault's knowledge layer. Trigger when the user says "ingest [file/topic]", "process this source", "add this to the wiki", "file this", or drops a file in `Reference/` (or the KB `sources/` folder) and asks Claude to work with it. Also trigger when the user wants to compile research notes, a document, or a reference into the vault so it's searchable and cross-referenced. Ingest reads the source, extracts entities and concepts, writes a summary page, updates related wiki pages, refreshes the content index, and logs the operation — so each source compounds the vault rather than disappearing into chat.
 ---
 
 # Skill: Ingest
@@ -11,7 +11,7 @@ Compile a source into the vault's wiki layer. A single ingest should touch multi
 
 ## Setup
 
-The wiki lives at `AI-Workshop/Projects/Wiki/`. Sources live in `Resources/`. When the user says to ingest something, confirm the source path before reading.
+The wiki lives at `AI-Workshop/Projects/Wiki/`. Sources you keep in the vault live in `Reference/`; bulk sources for the KB drop into the machine-local `AI-Workshop/kb-mcp/sources/` folder. When the user says to ingest something, confirm the source path before reading.
 
 ---
 
@@ -38,7 +38,7 @@ Create `AI-Workshop/Projects/Wiki/<source-slug>.md`:
 ```markdown
 ---
 type: source-summary
-source: Resources/<filename>
+source: Reference/<filename>
 ingested: <YYYY-MM-DD>
 tags: [<relevant tags>]
 ---

@@ -15,7 +15,7 @@ description: Scans the vault for notes related to a target document and inserts 
 
 2. **Scan the vault** — read the file names and, where necessary, the contents of notes in:
    - `Projects/`
-   - `Resources/`
+   - `Reference/`
    - `AI-Workshop/`
    - `Context/`
    - Any other top-level folders containing markdown notes

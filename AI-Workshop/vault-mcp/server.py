@@ -463,18 +463,9 @@ def get_session_brief_core():
         title = h1.group(1).strip() if h1 else f.stem
         if "—" in title:
             title = title.split("—")[-1].strip()
-        ip = re.search(r"(?ms)^##\s+In Progress\s*\n(.+?)(?=^##\s|\Z)", md)
-        in_progress = []
-        if ip:
-            for line in ip.group(1).splitlines():
-                if not re.match(r"^\s*[-*]\s+", line):  # bullets only; skip --- rules
-                    continue
-                s = re.sub(r"^\s*[-*]\s+", "", line).strip()
-                if s:
-                    in_progress.append(re.sub(r"\s+", " ", s)[:240])
         dm = re.match(r"(\d{4}-\d{2}-\d{2})", f.name)
         last = {"date": dm.group(1) if dm else "", "file": str(f.relative_to(VAULT)),
-                "topic": title, "in_progress": in_progress[:6] or ["Nothing half-built"]}
+                "topic": title}
     skills = _load_skills()
     agents = _load_agents()
     return {
@@ -640,7 +631,7 @@ def _tool_specs():
          "annotations": _RO, "handler": lambda: get_open_work_core()},
 
         {"name": "get_session_brief",
-         "description": "One-call startup bundle: latest session (topic + in-progress), open "
+         "description": "One-call startup bundle: latest session (date + topic), open "
                         "work, working-style preferences, and skill/agent capability lists. "
                         "Use at session start instead of reading history, open-work, memory, "
                         "and the maps separately.",

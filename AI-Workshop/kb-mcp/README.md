@@ -22,7 +22,7 @@ Follows the same fast-path/fallback pattern as the `vault` server: call the MCP 
 
 ## Auto-ingestion
 
-On startup the server scans `Resources/` for new or changed `.md`/`.txt`/`.pdf` files and ingests them before serving. No file watcher — drop a file in `Resources/` and restart the server to index it. Scan failures are logged to stderr and never abort startup.
+On startup the server scans `sources/` for new or changed `.md`/`.txt`/`.pdf` files and ingests them before serving. No file watcher — drop a file in `sources/` and restart the server to index it. Scan failures are logged to stderr and never abort startup.
 
 ## Setup
 
@@ -64,7 +64,7 @@ After editing `server.py` or `settings.json`, restart the host (Claude Desktop /
 | Var | Default | Purpose |
 |---|---|---|
 | `KB_DATA_PATH` | `<server_dir>/data` | LanceDB storage (gitignored) |
-| `KB_RESOURCES_PATH` | `<server_dir>/Resources` | auto-ingest drop folder |
+| `KB_RESOURCES_PATH` | `<server_dir>/sources` | auto-ingest drop folder |
 | `KB_MODEL_NAME` | `all-MiniLM-L6-v2` | embedding model |
 
 ## Bulk ingestion CLI

@@ -34,7 +34,7 @@ def main(argv=None):
 
     files = server._gather_files(root)
     if not files:
-        print("no .md/.txt/.pdf files found under %s" % root, file=sys.stderr)
+        print("no supported files found under %s" % root, file=sys.stderr)
         return 1
 
     total_chunks = total_dupes = skipped = errors = 0
