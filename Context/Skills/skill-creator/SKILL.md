@@ -48,6 +48,8 @@ It's OK to briefly explain terms if you're in doubt, and feel free to clarify te
 
 Start by understanding the user's intent. The current conversation might already contain a workflow the user wants to capture (e.g., they say "turn this into a skill"). If so, extract answers from the conversation history first — the tools used, the sequence of steps, corrections the user made, input/output formats observed. The user may need to fill the gaps, and should confirm before proceeding to the next step.
 
+In this vault, the strongest input is a prior _learning session_ — a dedicated session where the user and Claude actually operated the tool and captured what worked as a wiki page (`AI-Workshop/Projects/Wiki/`). If such findings exist, read them first: they're tried workflows, not guesses. See the skill-building practice in `Context/Systems/vault-rules.md`.
+
 1. What should this skill enable Claude to do?
 2. When should this skill trigger? (what user phrases/contexts)
 3. What's the expected output format?
@@ -270,14 +272,14 @@ If you're in Cowork, the main things to know are:
 
 The agents/ directory contains instructions for specialized subagents. Read them when you need to spawn the relevant subagent.
 
-- `agents/grader.md` — How to evaluate assertions against outputs
-- `agents/comparator.md` — How to do blind A/B comparison between two outputs
-- `agents/analyzer.md` — How to analyze why one version beat another
+- [[Context/Skills/skill-creator/agents/grader.md|agents/grader.md]] — How to evaluate assertions against outputs
+- [[Context/Skills/skill-creator/agents/comparator.md|agents/comparator.md]] — How to do blind A/B comparison between two outputs
+- [[Context/Skills/skill-creator/agents/analyzer.md|agents/analyzer.md]] — How to analyze why one version beat another
 
 The references/ directory has additional documentation:
-- `references/schemas.md` — JSON structures for evals.json, grading.json, etc.
-- `references/running-evals.md` — the full test-running and benchmarking procedure (read when ready to test a drafted skill)
-- `references/description-optimization.md` — the full description-optimization procedure (read when optimizing a skill's triggering)
+- [[Context/Skills/skill-creator/references/schemas.md|references/schemas.md]] — JSON structures for evals.json, grading.json, etc.
+- [[Context/Skills/skill-creator/references/running-evals.md|references/running-evals.md]] — the full test-running and benchmarking procedure (read when ready to test a drafted skill)
+- [[Context/Skills/skill-creator/references/description-optimization.md|references/description-optimization.md]] — the full description-optimization procedure (read when optimizing a skill's triggering)
 
 ---
 

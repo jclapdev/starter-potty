@@ -29,16 +29,16 @@ To apply styling to a slide deck or other artifact:
 
 The following 10 themes are available, each showcased in `theme-showcase.pdf`:
 
-1. **Ocean Depths** - Professional and calming maritime theme
-2. **Sunset Boulevard** - Warm and vibrant sunset colors
-3. **Forest Canopy** - Natural and grounded earth tones
-4. **Modern Minimalist** - Clean and contemporary grayscale
-5. **Golden Hour** - Rich and warm autumnal palette
-6. **Arctic Frost** - Cool and crisp winter-inspired theme
-7. **Desert Rose** - Soft and sophisticated dusty tones
-8. **Tech Innovation** - Bold and modern tech aesthetic
-9. **Botanical Garden** - Fresh and organic garden colors
-10. **Midnight Galaxy** - Dramatic and cosmic deep tones
+1. **[[Context/Skills/theme-factory/themes/ocean-depths.md|Ocean Depths]]** - Professional and calming maritime theme
+2. **[[Context/Skills/theme-factory/themes/sunset-boulevard.md|Sunset Boulevard]]** - Warm and vibrant sunset colors
+3. **[[Context/Skills/theme-factory/themes/forest-canopy.md|Forest Canopy]]** - Natural and grounded earth tones
+4. **[[Context/Skills/theme-factory/themes/modern-minimalist.md|Modern Minimalist]]** - Clean and contemporary grayscale
+5. **[[Context/Skills/theme-factory/themes/golden-hour.md|Golden Hour]]** - Rich and warm autumnal palette
+6. **[[Context/Skills/theme-factory/themes/arctic-frost.md|Arctic Frost]]** - Cool and crisp winter-inspired theme
+7. **[[Context/Skills/theme-factory/themes/desert-rose.md|Desert Rose]]** - Soft and sophisticated dusty tones
+8. **[[Context/Skills/theme-factory/themes/tech-innovation.md|Tech Innovation]]** - Bold and modern tech aesthetic
+9. **[[Context/Skills/theme-factory/themes/botanical-garden.md|Botanical Garden]]** - Fresh and organic garden colors
+10. **[[Context/Skills/theme-factory/themes/midnight-galaxy.md|Midnight Galaxy]]** - Dramatic and cosmic deep tones
 
 ## Theme Details
 
