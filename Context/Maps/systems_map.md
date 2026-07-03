@@ -15,6 +15,17 @@ _Index of all active systems in this vault. Each system defines rules for a spec
 
 ---
 
+## Scheduled Automation
+
+Recurring maintenance tasks that run on a schedule (via `AI-Workshop/Scheduled/`). Each has a SKILL.md defining what it checks and the shell runner that fires it.
+
+| Task | Path | Cadence |
+|---|---|---|
+| weekly-vault-health-check | [[AI-Workshop/Scheduled/weekly-vault-health-check/SKILL.md]] | Weekly |
+| monthly-efficiency-rediagnostic | [[AI-Workshop/Scheduled/monthly-efficiency-rediagnostic/SKILL.md]] | Monthly |
+
+---
+
 ## Memory
 
 Persistent memory lives in `Context/Memory/` — see its `MEMORY.md` index. Memory holds **behavior preferences** (how to work with the user). It is distinct from Maps, which hold **vault structure** (where things are). The system memory path is only a redirect pointing here.

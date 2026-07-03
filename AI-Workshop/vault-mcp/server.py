@@ -57,6 +57,7 @@ STATUS_VOCAB = ["idea", "active", "blocked", "needs-eval", "done"]
 _ORPHAN_EXEMPT_NAMES = {
     "main", "claude", "readme", "memory", "open-work",
     "vault_map", "skill_map", "agent_map", "systems_map",
+    "human", "onboarding",
 }
 _ORPHAN_EXEMPT_DIRS = ("Context/History", "Context/Diagnostics", "Context/Memory")
 
