@@ -1,15 +1,19 @@
-# Core
-lancedb>=0.6
-sentence-transformers>=2.7
-pypdf>=4.0
+# Full install = core + optional file-type extractors.
+#
+# setup.py installs core first with a hard check (requirements-core.txt), then
+# this file best-effort. A manual `pip install -r requirements.txt` still gets
+# everything because the -r line below pulls the core in.
+-r requirements-core.txt
 
 # File-type extractors (optional at runtime: a missing one skips that type,
-# never crashes ingestion — see _extract_chunks in server.py)
+# never crashes ingestion — see _extract_chunks in server.py). If one of these
+# fails to install (rapidocr/onnxruntime is the usual culprit on a fresh
+# machine), kb still runs for every other type.
 python-docx>=1.1           # .docx
 python-pptx>=0.6           # .pptx
 beautifulsoup4>=4.12       # .html / .epub
 striprtf>=0.0.26           # .rtf
 EbookLib>=0.18             # .epub
 openpyxl>=3.1              # .xlsx
-rapidocr-onnxruntime>=1.3  # image OCR (heavy: pulls onnxruntime)
+rapidocr-onnxruntime>=1.2  # image OCR (heavy: pulls onnxruntime; no wheels for Python 3.13+)
 Pillow>=10.0               # image loading for OCR

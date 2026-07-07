@@ -1,0 +1,6 @@
+# Core libraries — kb cannot run without these. setup.py installs this list with
+# a hard check; if it fails, kb is not registered (rather than shipping broken).
+# Keep this list minimal: only what server.py imports to serve its tools.
+lancedb>=0.6
+sentence-transformers>=2.7
+pypdf>=4.0

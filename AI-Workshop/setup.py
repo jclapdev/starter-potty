@@ -90,26 +90,58 @@ def resolve_servers() -> dict:
 # --------------------------------------------------------------------------- #
 # kb-mcp dependency install
 # --------------------------------------------------------------------------- #
+def _kb_core_ok(vpy: Path) -> bool:
+    """True if the kb virtualenv can import its core libraries. This is the real
+    test of whether kb will run — independent of any pip exit code. A prior
+    successful install still counts even if a later run hit a transient error."""
+    if not vpy.exists():
+        return False
+    probe = "import lancedb, sentence_transformers, pypdf"
+    try:
+        r = subprocess.run([str(vpy), "-c", probe],
+                           capture_output=True, text=True, timeout=120)
+    except Exception:  # noqa: BLE001
+        return False
+    return r.returncode == 0
+
+
 def setup_kb() -> bool:
-    """Set up the knowledge base. Returns True on success. A failure here never
-    stops the rest of setup; the user can re-run to retry."""
+    """Set up the knowledge base. Returns True if kb can actually run (its core
+    libraries import), False otherwise. A failure never stops the rest of setup.
+
+    Core libraries (requirements-core.txt) install with a hard check: without
+    them kb cannot serve, so a failure means kb is not registered. The optional
+    file-type extractors (the rest of requirements.txt) install best-effort — if
+    one fails (rapidocr/onnxruntime is the usual culprit on a fresh machine), kb
+    still runs for every other type, so that must not drop the whole connector."""
     print("\n== Setting up the knowledge base (kb) ==")
     venv = KB_DIR / ".venv"
     vpy = venv_python(venv)
+    core_req = KB_DIR / "requirements-core.txt"
+    full_req = KB_DIR / "requirements.txt"
     try:
         if not vpy.exists():
             print("  creating virtualenv %s" % venv)
             subprocess.run([sys.executable, "-m", "venv", str(venv)], check=True)
-        req = KB_DIR / "requirements.txt"
-        print("  installing libraries (first time downloads ~1 GB, can take a few minutes)")
-        subprocess.run([str(vpy), "-m", "pip", "install", "--upgrade", "pip"], check=True)
-        subprocess.run([str(vpy), "-m", "pip", "install", "-r", str(req)], check=True)
-        print("  knowledge base ready.")
-        return True
+        subprocess.run([str(vpy), "-m", "pip", "install", "--upgrade", "pip"], check=False)
+        print("  installing core libraries (first time downloads ~1 GB, can take a few minutes)")
+        subprocess.run([str(vpy), "-m", "pip", "install", "-r", str(core_req)], check=True)
     except Exception as exc:  # noqa: BLE001
-        print("  WARNING: the knowledge base didn't finish installing (%s)." % exc)
-        print("  Everything else is set up. Run setup again to retry the knowledge base.")
-        return False
+        print("  WARNING: the knowledge base core didn't install (%s)." % exc)
+        print("  Run setup again to retry the knowledge base.")
+        return _kb_core_ok(vpy)  # a prior run may have already installed it
+
+    # Optional extractors — best effort. Never let a failure here drop kb.
+    print("  installing optional file-type extractors (best effort)")
+    r = subprocess.run([str(vpy), "-m", "pip", "install", "-r", str(full_req)])
+    if r.returncode != 0:
+        print("  note: some optional extractors didn't install; kb still works for")
+        print("        core types. Re-run setup later to retry the extractors.")
+
+    ok = _kb_core_ok(vpy)
+    print("  knowledge base ready." if ok else
+          "  WARNING: kb core still won't import after install; kb not registered.")
+    return ok
 
 
 # --------------------------------------------------------------------------- #
@@ -309,6 +341,26 @@ def verify_install(servers: dict) -> bool:
         else:
             print("  FAIL  vault server: %s" % detail)
             print("        -> the vault MCP tools won't be available in the app.")
+            ok = False
+
+    # 3. kb server — part of the system. If it isn't registered, its libraries
+    #    didn't finish installing; say so plainly instead of shipping without it.
+    #    Checked by importing the core libs in its venv (fast, and it's what
+    #    actually breaks) rather than a full MCP probe: the kb server runs a
+    #    vault index scan before it serves, which can outlast a probe timeout on
+    #    first run and give a false FAIL.
+    kb_spec = servers.get("kb")
+    if not kb_spec:
+        print("  FAIL  kb server: not registered (its libraries didn't finish installing).")
+        print("        -> knowledge-base tools won't be available. Re-run setup to retry.")
+        ok = False
+    else:
+        vpy = Path(kb_spec.get("command", ""))
+        if _kb_core_ok(vpy):
+            print("  PASS  kb server: core libraries import in its virtualenv.")
+        else:
+            print("  FAIL  kb server: registered, but its virtualenv can't import the core libraries.")
+            print("        -> re-run setup to reinstall the knowledge base.")
             ok = False
 
     if ok:

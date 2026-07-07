@@ -15,6 +15,4 @@ AI-Workshop/.update-backups/
 
 # Per-machine UI / session state — regenerates constantly, pure diff noise
 .claudian/sessions/
-.claudian/claudian-settings.json
 .obsidian/workspace.json
-.obsidian/plugins/realclaudian/data.json
