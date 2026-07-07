@@ -708,6 +708,51 @@ def _tool_specs():
 PROTOCOL_VERSION = "2024-11-05"
 SERVER_INFO = {"name": "vault", "version": "2.0.0"}
 
+# --------------------------------------------------------------------------- #
+# Rule injection: give clients that don't load CLAUDE.md themselves (Claude
+# Desktop) the same rule text Claude Code and Claudian already get. Gated behind
+# VAULT_MCP_INJECT_RULES=1 so Code/Claudian, which load CLAUDE.md natively, don't
+# receive the rules twice. Set the flag only in the Desktop client config.
+# --------------------------------------------------------------------------- #
+_IMPORT_RE = re.compile(r"^\s*@(\S+)\s*$")
+
+
+def _expand_imports(path, seen, depth=0):
+    """Inline @imports exactly as Claude Code expands CLAUDE.md, so Desktop gets
+    byte-for-byte the same rule chain Code sees. Cycle- and depth-guarded; a
+    missing or unreadable file resolves to empty rather than raising."""
+    path = Path(path).resolve()
+    if depth > 10 or str(path) in seen:
+        return ""
+    seen.add(str(path))
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return ""
+    lines = []
+    for line in text.splitlines():
+        m = _IMPORT_RE.match(line)
+        if not m:
+            lines.append(line)
+            continue
+        target = m.group(1)
+        for cand in ((VAULT / target), (path.parent / target)):
+            if cand.exists():
+                lines.append(_expand_imports(cand, seen, depth + 1))
+                break
+    return "\n".join(lines)
+
+
+def _load_instructions():
+    """Full expanded CLAUDE.md chain, or None when the flag is off / file gone."""
+    if os.environ.get("VAULT_MCP_INJECT_RULES") != "1":
+        return None
+    entry = VAULT / "CLAUDE.md"
+    if not entry.exists():
+        return None
+    text = _expand_imports(entry, set()).strip()
+    return text or None
+
 
 def _send(obj):
     try:
@@ -739,9 +784,13 @@ def _serve_stdio():
             continue
 
         if method == "initialize":
-            _send({"jsonrpc": "2.0", "id": mid, "result": {
+            result = {
                 "protocolVersion": params.get("protocolVersion", PROTOCOL_VERSION),
-                "capabilities": {"tools": {}}, "serverInfo": SERVER_INFO}})
+                "capabilities": {"tools": {}}, "serverInfo": SERVER_INFO}
+            instr = _load_instructions()
+            if instr:
+                result["instructions"] = instr
+            _send({"jsonrpc": "2.0", "id": mid, "result": result})
         elif method == "tools/list":
             _send({"jsonrpc": "2.0", "id": mid, "result": {"tools": public_tools}})
         elif method == "tools/call":

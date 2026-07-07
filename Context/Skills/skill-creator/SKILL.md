@@ -201,6 +201,17 @@ Keep going until:
 
 ---
 
+## Ship the user-facing docs
+
+When a skill ships, its documentation ships with it — not as a later pass. A skill the user can't understand in plain terms is half-built, and 100 undocumented skills rot. So once the skill is registered in `skill_map.md`, do two things:
+
+1. **Create its Guide page.** Copy `Context/Guide/_template.md` to `Context/Guide/<skill-name>.md` and fill the five sections (what it's for, how it works, when it touches you, best practices, dig deeper). Set `covers:` to the SKILL.md path. Write it for the user, in plain words — not a copy of the SKILL.md, which is written for the AI. Then add a row under the right category in `Context/Guide/HUMAN.md`.
+2. **Add glossary entries.** For any new term the skill introduces, add an entry to `Context/Systems/glossary.md` (plain meaning + one line on when it touches you + a link to the Guide page).
+
+The weekly health check flags any skill missing a Guide page, so skipping this surfaces as drift.
+
+---
+
 ## Advanced: Blind comparison
 
 For situations where you want a more rigorous comparison between two versions of a skill (e.g., the user asks "is the new version actually better?"), there's a blind comparison system. Read `agents/comparator.md` and `agents/analyzer.md` for the details. The basic idea is: give two outputs to an independent agent without telling it which is which, and let it judge quality. Then analyze why the winner won.

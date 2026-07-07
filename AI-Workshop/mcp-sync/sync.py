@@ -83,6 +83,23 @@ def _warn_missing_commands(servers):
             print("  WARNING: %s -> command not found on disk: %s" % (name, cmd))
 
 
+def _for_target(servers, label):
+    """Return the server block to write for one target.
+
+    Claude Desktop does not load CLAUDE.md, so its `vault` server needs
+    VAULT_MCP_INJECT_RULES=1 to receive the same rule chain Code and Claudian
+    load natively. The Code target (.mcp.json, also read by Claudian) is left
+    without the flag so those two surfaces don't load the rules twice.
+    """
+    if "Desktop" not in label:
+        return servers
+    out = json.loads(json.dumps(servers))  # deep copy so canonical stays clean
+    vault = out.get("vault")
+    if vault is not None:
+        vault.setdefault("env", {})["VAULT_MCP_INJECT_RULES"] = "1"
+    return out
+
+
 def check():
     """Confirm the system's servers (vault, kb) are present and correct in each
     target. Any other server already in the config is the user's own and is
@@ -90,9 +107,10 @@ def check():
     servers = _canonical()
     drift = False
     for label, path in TARGETS:
+        target = _for_target(servers, label)
         current = _load(path).get("mcpServers", {})
-        missing = [k for k in servers if k not in current]
-        differs = [k for k in servers if k in current and current[k] != servers[k]]
+        missing = [k for k in target if k not in current]
+        differs = [k for k in target if k in current and current[k] != target[k]]
         if not missing and not differs:
             print("in sync: %s" % label)
         else:
@@ -112,12 +130,13 @@ def sync():
     print("system servers: %s" % ", ".join(sorted(servers)))
     _warn_missing_commands(servers)
     for label, path in TARGETS:
+        target = _for_target(servers, label)
         data = _load(path)
         if path.exists():
             shutil.copy(str(path), str(path) + ".bak")
         mcp = data.get("mcpServers", {})
-        kept = [k for k in mcp if k not in servers]
-        mcp.update(servers)          # add/update ours; leave the rest alone
+        kept = [k for k in mcp if k not in target]
+        mcp.update(target)           # add/update ours; leave the rest alone
         data["mcpServers"] = mcp
         path.parent.mkdir(parents=True, exist_ok=True)
         _dump(path, data)

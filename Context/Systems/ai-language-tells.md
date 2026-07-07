@@ -67,6 +67,7 @@ Furthermore, Moreover, Additionally, Consequently, Subsequently, Nevertheless, N
 - Relentless positivity and over-qualification.
 - Vague attribution: "studies show", "experts say", "it is widely believed", with no source.
 - Over-explaining the obvious; defining terms no one asked about.
+- **Clickbait teaser / curiosity gap:** dangling an answer instead of stating it. "the one rule that fixes most problems", "the mistake almost everyone makes", "here's the part nobody tells you", "and that changes everything". Just state the fact plainly. If the point is that fame only lands on worn gear, write that, don't tease it.
 
 ## 7. Formatting and punctuation tells
 
@@ -80,6 +81,8 @@ Furthermore, Moreover, Additionally, Consequently, Subsequently, Nevertheless, N
 
 "Great question!", "Certainly!", "Absolutely!", "You're absolutely right", "I'd be happy to", "I hope this helps", "Let me…", "Feel free to", "Dive in", "Let's explore", "Happy to help".
 
+- **Verdicts on the user (banned outright).** Never tell the user they are right or wrong, in any form: "you're right", "you're correct", "good point", "fair point", "exactly", "spot on". Skip the verdict and go straight to the substance (memory: [no-verdict](../Memory/feedback_no-verdict.md)). The `vault-verify` hook blocks these in files; in chat it is on the self-check.
+
 ---
 
 ## Pre-send self-check
@@ -91,10 +94,18 @@ Run before delivering any written work:
 3. Find any "It's worth noting / At its core / In today's" filler. Cut.
 4. Check for the rule-of-three cadence and "not just X, it's Y". Rewrite.
 5. Check the opening sentence: does it restate the prompt? Cut.
+5a. Check headings and lead-ins for clickbait teasers ("the one rule…", "the mistake everyone makes…"). State the point plainly instead.
 6. Check the ending: is it a summary that repeats the body? Cut.
 7. Read the first word of each paragraph: do several share the same transition? Vary them.
 
-For long or high-stakes documents, run through the full checklist carefully before sending. The vault-verify hook catches word-level tells automatically; this checklist covers structural and tonal patterns it can't detect.
+For long or high-stakes documents, run through the full checklist carefully before sending.
+
+## How this is enforced
+
+Two layers back this catalog up, because a soft self-check alone keeps failing:
+
+1. **The `vault-verify` hook (deterministic, blocking).** It runs on every `.md` write and rejects the save if it finds an em-dash, a banned word from the list, or negative parallelism ("not just X, it's Y"). Those never reach a saved file. It scans prose only, so example tells inside code blocks or blockquotes are ignored, and the files that document the tells (this one, `base-rules.md`, `main.md`, the prose-review agent) are skipped whole. It checks only the text a write introduces (a full new file on Write, the replacement text on Edit), so touching a legacy file doesn't block on old tells in lines you never edited. Legacy cleanup is a separate sweep, not this hook's job.
+2. **The [[prose-review]] agent (judgment, on user-facing docs).** The hook can't see rule-of-three cadence, tone, restated openers, or jargon that's wrong for the reader. Before finalizing a user-facing prose doc, a fresh-eyes reader catches those (see [[document-workflow]] §5). Wrap-up runs it over the session's user-facing docs as a backstop.
 
 ---
 

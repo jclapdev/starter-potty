@@ -12,6 +12,7 @@ _Index of all active systems in this vault. Each system defines rules for a spec
 | vault-rules | `Context/Systems/vault-rules.md` | Vault operating rules: meta-mode, navigation sequence, wikilinks, skills, file creation, maintenance, memory placement |
 | ai-language-tells | `Context/Systems/ai-language-tells.md` | AI-language tells catalog, plain-word alternatives, and the pre-send self-check (supports the "No AI Tells" rule in `base-rules.md`) |
 | base-rules | `Context/Systems/base-rules.md` | Core behavioral rules, output preferences, language guidelines, and keyword triggers — loaded via CLAUDE.md alongside personal `main.md`; ships from the Starter |
+| glossary | `Context/Systems/glossary.md` | Plain-language, one-line definitions of system terms (user-facing). Paired with the per-mechanism pages in `Context/Guide/` |
 
 ---
 
@@ -27,3 +28,4 @@ Persistent memory lives in `Context/Memory/` — see its `MEMORY.md` index. Memo
 2. Add a row to this table.
 3. Add the system to the navigation sequence in `base-rules.md` if it applies to all tasks.
 4. Update [[vault_map]] if the system introduces new folders.
+5. Create its user guide: copy `Context/Guide/_template.md` to `Context/Guide/<system-name>.md`, fill the five sections, and add it to `Context/Guide/HUMAN.md`. Add glossary entries in `Context/Systems/glossary.md` for any new terms the system introduces. Docs are a byproduct of building the mechanism, not a later pass.

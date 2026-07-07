@@ -24,6 +24,10 @@ Run [[wrap-up]] when the user says "wrap up" or any clear equivalent. The wrap-u
 
 Do not run [[session-handoff]] or [[vault-maintenance]] manually as a shortcut for wrap-up unless the user explicitly asks. The full sequence exists for a reason.
 
+### Unfinished problems carry over as top priority
+
+If a session ends with a problem still open, especially one the user flagged as a live issue, it becomes the next session's number 1 item and is worked before anything else. Mark it `[NOW]` at the top of [[open-work]] and surface it first in the startup brief.
+
 ---
 
 ## 3. Status Check
@@ -67,6 +71,10 @@ Run [[vault-maintenance]] after any of the following:
 - A map file is manually edited
 
 Do not skip — stale references break navigation silently.
+
+### Documentation Currency Rule
+
+When a mechanism (a skill or system) changes in a way that changes how it behaves for the user, refresh its user guide in the same session — update `Context/Guide/<name>.md` and any affected `Context/Systems/glossary.md` entries. The Guide is the user-facing source of truth; if it describes old behavior, it misleads. This is checked during wrap-up's conversation review and, across the whole vault, by the weekly health check's coverage step.
 
 ### Session Handoff Rule
 

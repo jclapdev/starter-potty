@@ -212,6 +212,112 @@ def report_cowork_access() -> None:
 # --------------------------------------------------------------------------- #
 # Main
 # --------------------------------------------------------------------------- #
+def _resolve_import_chain(entry: Path):
+    """Follow @imports from CLAUDE.md exactly as Code/Claudian expand them.
+    Returns (files_seen, missing_targets)."""
+    import re
+    imp = re.compile(r"^\s*@(\S+)\s*$")
+    seen: list[Path] = []
+    missing: list[str] = []
+
+    def walk(path: Path, depth=0):
+        path = path.resolve()
+        if depth > 10 or path in seen:
+            return
+        if not path.exists():
+            missing.append(str(path))
+            return
+        seen.append(path)
+        for line in path.read_text(encoding="utf-8").splitlines():
+            m = imp.match(line)
+            if not m:
+                continue
+            target = m.group(1)
+            for cand in ((VAULT / target), (path.parent / target)):
+                if cand.exists():
+                    walk(cand, depth + 1)
+                    break
+            else:
+                missing.append(target)
+
+    walk(entry)
+    return seen, missing
+
+
+def _probe_vault_server(spec: dict) -> tuple[bool, str]:
+    """Launch the vault server exactly as an app would and confirm it answers a
+    tools/list. Returns (ok, detail)."""
+    cmd = [spec.get("command", "")] + list(spec.get("args", []))
+    env = {**os.environ, **spec.get("env", {})}
+    init = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize",
+                       "params": {"protocolVersion": "2024-11-05"}})
+    listing = json.dumps({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
+    try:
+        proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE, text=True)
+    except OSError as exc:
+        return False, "could not launch (%s): %s" % (cmd[0], exc)
+    try:
+        out, err = proc.communicate(init + "\n" + listing + "\n", timeout=20)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        return False, "no response within 20s (server may be hanging)"
+    for line in out.splitlines():
+        try:
+            msg = json.loads(line)
+        except ValueError:
+            continue
+        tools = (msg.get("result") or {}).get("tools")
+        if isinstance(tools, list) and tools:
+            return True, "%d tools" % len(tools)
+    tail = (err or out).strip().splitlines()[-1:] or [""]
+    return False, "started but returned no tools (%s)" % tail[0]
+
+
+def verify_install(servers: dict) -> bool:
+    """End-of-setup self-check. Prints a plain PASS/FAIL the user can read on any
+    machine — no need to send output anywhere. Returns True if all checks pass."""
+    print("\n== Verifying the install ==")
+    ok = True
+
+    # 1. Rule chain: CLAUDE.md and every @import it pulls in must resolve.
+    entry = VAULT / "CLAUDE.md"
+    if not entry.exists():
+        print("  FAIL  rules: CLAUDE.md not found at vault root (%s)" % VAULT)
+        print("        -> apps load no rules. Confirm this folder is the vault root.")
+        ok = False
+    else:
+        _, missing = _resolve_import_chain(entry)
+        if missing:
+            print("  FAIL  rules: CLAUDE.md loads, but these @imports are missing:")
+            for t in missing:
+                print("          - %s" % t)
+            print("        -> rules load only partially. Re-run update to restore them.")
+            ok = False
+        else:
+            print("  PASS  rules: CLAUDE.md and its full @import chain resolve.")
+
+    # 2. Vault server must actually launch and serve tools (get_session_brief etc.).
+    vault_spec = servers.get("vault")
+    if not vault_spec:
+        print("  FAIL  vault server: not registered.")
+        ok = False
+    else:
+        good, detail = _probe_vault_server(vault_spec)
+        if good:
+            print("  PASS  vault server: launches and serves tools (%s)." % detail)
+        else:
+            print("  FAIL  vault server: %s" % detail)
+            print("        -> the vault MCP tools won't be available in the app.")
+            ok = False
+
+    if ok:
+        print("  All checks passed. Restart the app and the system will be live.")
+    else:
+        print("\n  One or more checks FAILED. Fix the items above, then re-run setup.")
+    return ok
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Set up this vault's AI system (cross-platform).")
     ap.add_argument("--no-desktop", action="store_true",
@@ -247,6 +353,8 @@ def main() -> int:
     report_cowork_access()
     if not args.no_desktop_shortcut:
         make_desktop_shortcut()
+
+    verify_install(servers)
 
     print("\nSetup complete.")
     print("Next: restart Claude Code and (if used) Claude Desktop so they load the servers.")
