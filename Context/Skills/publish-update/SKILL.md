@@ -17,7 +17,7 @@ Use this after we change the system (skills, systems, agents, maps, or the helpe
 
 2. Rebuild the shareable Starter:
    ```
-   python AI-Workshop/build-starter.py
+   python AI-Workshop/maintainer/build-starter.py
    ```
    This copies the latest system into the Starter, strips out anything personal, checks it, and commits the Starter. If the check fails, fix what it reports and run it again. Do not move on until it says **All checks passed**.
 

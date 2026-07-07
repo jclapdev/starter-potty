@@ -38,6 +38,10 @@ STARTER_ZIP_URL = "https://github.com/jclapdev/starter-potty/archive/refs/heads/
 SYSTEM_FILES = [
     "CLAUDE.md",
     "HUMAN.md",
+    "install.sh",
+    "install.ps1",
+    "update.sh",
+    "update.ps1",
     "AI-Workshop/setup.py",
     "AI-Workshop/update.py",
     "Context/Maps/skill_map.md",

@@ -306,9 +306,13 @@ def _probe_vault_server(spec: dict) -> tuple[bool, str]:
     return False, "started but returned no tools (%s)" % tail[0]
 
 
-def verify_install(servers: dict) -> bool:
+def verify_install(servers: dict, kb_expected: bool = True) -> bool:
     """End-of-setup self-check. Prints a plain PASS/FAIL the user can read on any
-    machine — no need to send output anywhere. Returns True if all checks pass."""
+    machine — no need to send output anywhere. Returns True if all checks pass.
+
+    kb_expected is False when the user ran --no-kb: the knowledge base is
+    intentionally absent, so a missing kb server is reported as skipped, not
+    failed."""
     print("\n== Verifying the install ==")
     ok = True
 
@@ -350,7 +354,9 @@ def verify_install(servers: dict) -> bool:
     #    vault index scan before it serves, which can outlast a probe timeout on
     #    first run and give a false FAIL.
     kb_spec = servers.get("kb")
-    if not kb_spec:
+    if not kb_expected:
+        print("  SKIP  kb server: set up without the knowledge base (--no-kb).")
+    elif not kb_spec:
         print("  FAIL  kb server: not registered (its libraries didn't finish installing).")
         print("        -> knowledge-base tools won't be available. Re-run setup to retry.")
         ok = False
@@ -376,17 +382,23 @@ def main() -> int:
                     help="Skip writing the Claude Desktop config (Claude Code only).")
     ap.add_argument("--no-desktop-shortcut", action="store_true",
                     help="Don't add a Desktop shortcut/alias to the vault.")
+    ap.add_argument("--no-kb", action="store_true",
+                    help="Set up without the knowledge base (skip the ~1 GB kb install).")
     args = ap.parse_args()
 
     print("Vault: %s" % VAULT)
     print("Python: %s (%s)" % (sys.executable, platform.platform()))
 
-    kb_ok = setup_kb()
+    if args.no_kb:
+        print("\n== Knowledge base (kb) ==\n  skipped (--no-kb)")
+        kb_ok = False
+    else:
+        kb_ok = setup_kb()
 
     print("\n== Generating machine-specific server config ==")
     servers = resolve_servers()
     if not kb_ok:
-        servers.pop("kb", None)  # install failed; don't register a broken connector
+        servers.pop("kb", None)  # skipped (--no-kb) or install failed; don't register a broken connector
     SERVERS.write_text(json.dumps(servers, indent=2) + "\n", encoding="utf-8")
     print("  wrote %s (%s)" % (SERVERS.name, ", ".join(servers)))
 
@@ -406,12 +418,12 @@ def main() -> int:
     if not args.no_desktop_shortcut:
         make_desktop_shortcut()
 
-    verify_install(servers)
+    verify_install(servers, kb_expected=not args.no_kb)
 
     print("\nSetup complete.")
     print("Next: restart Claude Code and (if used) Claude Desktop so they load the servers.")
     print("In the Claude desktop app (Cowork), open this vault from the Desktop entry.")
-    if not kb_ok:
+    if not kb_ok and not args.no_kb:
         print("The knowledge base didn't finish installing; re-run setup to try again.")
     return 0
 

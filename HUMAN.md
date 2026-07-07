@@ -9,16 +9,17 @@ You see the files in Obsidian. Claude works in the same folder. Nothing is hidde
 ## Contents
 
 1. [The big idea](#the-big-idea)
-2. [Where to put this folder](#where-to-put-this-folder)
-3. [Setup (one command)](#setup-one-command)
-4. [Two ways to run Claude](#two-ways-to-run-claude)
-5. [How a session works](#how-a-session-works)
-6. [The pieces](#the-pieces)
-7. [Day to day](#day-to-day)
-8. [Keeping it healthy](#keeping-it-healthy)
-9. [Sharing this system](#sharing-this-system)
-10. [Updating to a new version](#updating-to-a-new-version)
-11. [Troubleshooting](#troubleshooting)
+2. [The two commands you ever run](#the-two-commands-you-ever-run)
+3. [Where to put this folder](#where-to-put-this-folder)
+4. [What setup does under the hood](#what-setup-does-under-the-hood)
+5. [Two ways to run Claude](#two-ways-to-run-claude)
+6. [How a session works](#how-a-session-works)
+7. [The pieces](#the-pieces)
+8. [Day to day](#day-to-day)
+9. [Keeping it healthy](#keeping-it-healthy)
+10. [Sharing this system](#sharing-this-system)
+11. [Updating to a new version](#updating-to-a-new-version)
+12. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -30,37 +31,57 @@ The system gives Claude a memory and a set of habits so it does not start cold e
 
 ---
 
+## The two commands you ever run
+
+There are only two, ever. Everything else in here is plumbing that runs itself. You never call it by hand.
+
+**1. Install.** Run this once, on a new machine. Paste one line. It installs Python, Obsidian, Claude Desktop, Claude Code, and this vault, then wires everything up.
+
+- **macOS** (Terminal):
+  ```bash
+  curl -fsSL https://raw.githubusercontent.com/jclapdev/starter-potty/main/install.sh | bash
+  ```
+- **Windows** (PowerShell):
+  ```powershell
+  irm https://raw.githubusercontent.com/jclapdev/starter-potty/main/install.ps1 | iex
+  ```
+
+**2. Update.** Run this any time you want the latest improvements. Same shape as install. It refreshes only the system files and never touches your notes, projects, history, memory, `main.md`, or machine settings.
+
+- **macOS** (Terminal):
+  ```bash
+  curl -fsSL https://raw.githubusercontent.com/jclapdev/starter-potty/main/update.sh | bash
+  ```
+- **Windows** (PowerShell):
+  ```powershell
+  irm https://raw.githubusercontent.com/jclapdev/starter-potty/main/update.ps1 | iex
+  ```
+
+That is the whole surface. Both are safe to re-run: anything already done is skipped. The rest of this page explains what happens behind these two commands, for when you are curious, but you do not run any of it yourself.
+
+---
+
 ## Where to put this folder
 
 Put the vault in your **home folder** (`~/ClaudeVault` on Mac, `C:\Users\YourName\ClaudeVault` on Windows), then run setup (next section). Setup automatically puts a **shortcut to the vault on your Desktop**, so you open it from the Desktop like any other folder, and it works on every machine.
 
 You do not have to think about any of this. The short version:
 
-1. Put the `ClaudeVault` folder in your home folder.
-2. Run `python AI-Workshop/setup.py`.
-3. Open the new **ClaudeVault** shortcut on your Desktop in both Obsidian and Claude.
+1. The **Install** command above already puts `ClaudeVault` in your home folder. (Setting it up by hand instead? Put the folder there yourself, then run `python AI-Workshop/setup.py` from inside it.)
+2. Setup puts a **ClaudeVault** shortcut on your Desktop.
+3. Open that shortcut in both Obsidian and Claude.
 
 Why it is done this way: the Claude desktop app (Cowork) only opens a folder whose real location is inside your home folder. On some computers the Desktop and Documents folders are quietly relocated by OneDrive or iCloud, so a vault placed directly on the Desktop can be rejected. Keeping the real folder in your home folder and pointing at it through a Desktop shortcut gives you the Desktop convenience while always satisfying that rule, no matter how the machine is configured. If you ever move the vault somewhere outside your home folder, setup will tell you and point you back.
 
 ---
 
-## Setup (one command)
+## What setup does under the hood
 
-You need three things first: **Python** (3.9+), **Obsidian**, and **Claude** (the desktop app, Claude Code, or both).
+The **Install** command above runs this for you. This section is just so you know what happened. You do not run it by hand unless you already had Python, Obsidian, and Claude installed and only need to wire the vault up, in which case run `python AI-Workshop/setup.py` once from this folder.
 
-Then, from this folder, run:
+Setup works on macOS, Windows, and Linux because it uses the exact Python it was run with, figures out your own paths, and writes the config files each Claude app needs. It also sets up the knowledge base, which the first time downloads about 1 GB of libraries, so give it a few minutes. When it finishes it prints a plain PASS/FAIL check for each part (rules, the vault server, the knowledge base) so you can see everything is wired up. After setup, restart Claude.
 
-```bash
-python AI-Workshop/setup.py
-```
-
-That is the whole setup. It works on macOS, Windows, and Linux because it uses the exact Python you just ran it with, figures out your own paths, and writes the config files each Claude app needs. It also sets up the knowledge base, which the first time downloads about 1 GB of libraries, so give it a few minutes.
-
-In the rare case you want to skip the knowledge base, run `python AI-Workshop/setup.py --no-kb`.
-
-After setup, restart Claude. That is it. See [Two ways to run Claude](#two-ways-to-run-claude) for how to point Claude at this folder.
-
-> Why one command matters: everything machine-specific (where Python lives, where this folder is, Windows vs Mac path styles) is worked out on your machine at setup time. The shared files contain none of it, so the same package works for everyone.
+> Why this is one command: everything machine-specific (where Python lives, where this folder is, Windows vs Mac path styles) is worked out on your machine at setup time. The shared files contain none of it, so the same package works for everyone.
 
 ---
 
@@ -139,7 +160,7 @@ You do not have to run these manually beyond saying "wrap up."
 
 ## Sharing this system
 
-This vault doubles as a shareable starter kit. The build that produces the shareable copy lives in `AI-Workshop/build-starter.py`; it strips out anything personal and machine-specific, leaving the system skeleton plus the setup tooling.
+This vault doubles as a shareable starter kit. The build that produces the shareable copy lives in `AI-Workshop/maintainer/build-starter.py`; it strips out anything personal and machine-specific, leaving the system skeleton plus the setup tooling.
 
 The recipient does exactly one thing after unzipping: run `python AI-Workshop/setup.py`. Because none of the shared files contain absolute paths or assume a particular Python, it works the same on a fresh Windows, macOS, or Linux machine. That run also sets up the knowledge base, which downloads about 1 GB of libraries the first time. If that download ever fails, the rest of the system still works and re-running setup finishes it.
 
@@ -147,22 +168,16 @@ The recipient does exactly one thing after unzipping: run `python AI-Workshop/se
 
 ## Updating to a new version
 
-This is for machines that already run the system and just need the latest improvements. It does not start over and it does not touch your work.
+This is command #2 from the top of the page. Run it on any machine that already has the system when you want the latest improvements. The one line handles everything, including fetching the updater the first time:
 
-Run this from the vault folder:
-
-```
-python AI-Workshop/update.py
-```
-
-First time on an older machine that doesn't have `update.py` yet? Get it once, then run it:
-
-```
-curl -L -o AI-Workshop/update.py https://raw.githubusercontent.com/jclapdev/starter-potty/main/AI-Workshop/update.py
-python AI-Workshop/update.py
-```
-
-(Or open that link in a browser, save it into the `AI-Workshop` folder as `update.py`, then run the second line.) That first run pulls in the whole latest system.
+- **macOS** (Terminal):
+  ```bash
+  curl -fsSL https://raw.githubusercontent.com/jclapdev/starter-potty/main/update.sh | bash
+  ```
+- **Windows** (PowerShell):
+  ```powershell
+  irm https://raw.githubusercontent.com/jclapdev/starter-potty/main/update.ps1 | iex
+  ```
 
 It downloads the latest system, saves a backup of the current system files, and replaces only the system parts: skills, systems, agents, the system maps, and the helper programs. Your projects, notes, history, memory, your `main.md`, and your machine settings are left exactly as they are. When it finishes, restart Claude.
 
@@ -172,7 +187,7 @@ No internet on that machine? Update from a copy of the latest version instead:
 python AI-Workshop/update.py --from new-version.zip
 ```
 
-You do not need git for either one. The backups it makes are kept in `AI-Workshop/.update-backups/`.
+You do not need git for any of this. The backups it makes are kept in `AI-Workshop/.update-backups/`.
 
 ---
 

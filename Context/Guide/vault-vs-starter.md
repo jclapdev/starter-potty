@@ -1,11 +1,11 @@
 ---
 tags: [guide]
-covers: AI-Workshop/build-starter.py
+covers: AI-Workshop/maintainer/build-starter.py
 ---
 
 # Vault vs. Starter
 
-_User guide. The plain-language companion to the AI reference in `AI-Workshop/build-starter.py`._
+_User guide. The plain-language companion to the AI reference in `AI-Workshop/maintainer/build-starter.py`._
 
 ## What it's for
 
@@ -36,5 +36,5 @@ Someone else installs the system by running `update.py`, which **downloads the S
 
 ## Dig deeper →
 
-- AI reference (the exact procedure): `AI-Workshop/build-starter.py`
+- AI reference (the exact procedure): `AI-Workshop/maintainer/build-starter.py`
 - Glossary: [[glossary]] (related terms)
