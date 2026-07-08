@@ -48,23 +48,32 @@ Apply all changes before moving to the next step.
 
 **Done when:** Every item in `approved_changes` is written to disk.
 
-### Step 2 — Run Vault Maintenance
+### Step 2: Vault Health Check
 
-Spawn the vault-maintenance agent with `vault_path` as input. Wait for it to complete.
+Call the `vault_health` tool (vault MCP server). It returns a compact report: broken links, orphans, map discrepancies, lint findings with file and line, and archive-candidate history notes. Never scan vault files yourself; the tool covers the whole vault deterministically at near-zero cost.
 
-If vault-maintenance reports flagged issues that require a decision, include them verbatim in this agent's output under "Flagged Issues" — do not make judgment calls on ambiguous references.
+Apply the safe fixes the report names:
 
-**Done when:** Vault-maintenance agent returns a result.
+- Broken links where the correct target is unambiguous (one clear match in the vault)
+- Map rows whose path is stale after a rename with one clear match
+- Lint findings (each gives the exact file, line, and issue)
+- Move each archive candidate to `Context/History/Archive/`, but confirm first: the candidate list is a heuristic (the note is not referenced by filename or date in the Open section of open-work.md). If its open items are plainly still active, leave it and flag it.
+
+Include everything ambiguous verbatim in this agent's output under "Flagged Issues". Do not make judgment calls on ambiguous references.
+
+If the `vault_health` tool is unavailable (vault connector down), skip this step and note that in output. Do not fall back to reading every file.
+
+**Done when:** Report obtained; safe fixes applied; everything else flagged.
 
 ### Step 3 — Apply Session-Specific Map Edits
 
-Map *verification* is already handled by the vault-maintenance agent spawned in Step 2 — do not repeat the full audit here. In this step, only apply map edits that this session's `approved_changes` directly require:
+Map *verification* is already handled by the `vault_health` report in Step 2, so do not repeat the full audit here. In this step, only apply map edits that this session's `approved_changes` directly require:
 
 - A new skill → add its row to `skill_map.md`
 - A new system → add its row to `systems_map.md`
 - A new top-level folder or `Context/Agents/` directory → add it to `vault_map.md`
 
-If Step 2's vault-maintenance pass flagged any map discrepancies, surface them rather than guessing.
+If the Step 2 report flagged any map discrepancies you could not safely fix, surface them rather than guessing.
 
 **Done when:** Map edits required by `approved_changes` are applied; full verification is left to the Step 2 pass.
 
@@ -140,7 +149,7 @@ HANDOFF
 [Path of the handoff file written]
 
 FLAGGED ISSUES (if any)
-[Verbatim output from vault-maintenance that requires a decision]
+[Findings from the vault_health report that require a decision, verbatim]
 ```
 
 ---

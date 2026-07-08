@@ -45,8 +45,6 @@ Context/Agents/
 ├── TEMPLATE.md           # Standard template for new agents
 ├── wrap-up/
 │   └── AGENT.md
-├── vault-maintenance/
-│   └── AGENT.md
 ├── backlink-scan/
 │   └── AGENT.md
 ├── skill-eval-runner/

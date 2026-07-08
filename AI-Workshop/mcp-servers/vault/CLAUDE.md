@@ -6,7 +6,7 @@
 
 **After editing `server.py`:** restart Claude Desktop to reload.
 
-**11 tools (all read-only):**
+**12 tools (all read-only):**
 
 | Tool | Purpose |
 |---|---|
@@ -21,5 +21,6 @@
 | `resolve_note(name)` | Wikilink/bare name → real vault path(s) |
 | `vault_tree(path, depth)` | Compact folder layout with md-file counts |
 | `list_by_status(status?)` | Notes by `status` frontmatter field |
+| `vault_health()` | One-call maintenance report: broken links, orphans, map verification, lint, archive candidates. Read-only; the caller applies fixes |
 
 **Index:** mtime-cached — only changed files are reparsed on each call. Honors `Context/.vaultignore`.

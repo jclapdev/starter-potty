@@ -22,6 +22,9 @@ Tools (all read-only):
     - resolve_note(name)           → a [[wikilink]] / bare name -> real path(s)
     - vault_tree(path, depth)      → compact folder/file layout
     - list_by_status(status)       → notes by validated `status` frontmatter field
+  Maintenance
+    - vault_health()               → one-call maintenance report (links, orphans,
+                                     maps, lint, archive candidates); read-only
 
 A single mtime-cached index backs every tool below find_skill/resolve_agent, so
 a query reparses only the files that changed since the last call. The index
@@ -271,6 +274,15 @@ def _build_index():
     # Drop cache entries for deleted files.
     for stale in [r for r in _NOTE_CACHE if r not in seen]:
         _NOTE_CACHE.pop(stale, None)
+
+    # Ignored-but-linkable trees: excluded from notes/orphans (not canonical
+    # vault content) but valid link targets, so links into them aren't flagged
+    # broken. .claude skills are first-class (registered in skill_map).
+    for p in VAULT.glob(".claude/skills/*/SKILL.md"):
+        file_keys.add(p.parent.name.lower())
+    for p in (VAULT / "Workshop-Human").rglob("*.md"):
+        file_keys.add(p.name.lower())
+        file_keys.add(p.stem.lower())
 
     by_key = {}
     for note in notes:
@@ -600,6 +612,208 @@ def list_by_status_core(status=None):
 
 
 # --------------------------------------------------------------------------- #
+# Core logic — vault_health (deterministic maintenance report; fixes nothing)
+# --------------------------------------------------------------------------- #
+_PATH_REF = re.compile(r"(?:`|\[\[)([^`\[\]|\n]+\.md)(?:`|\]\]|\|)")
+
+
+def _extract_md_paths(text):
+    """Explicit .md path references in backticks or [[wikilinks]] — real paths
+    only, so placeholders (<name>, {var}, globs) are skipped."""
+    out = set()
+    for m in _PATH_REF.finditer(text):
+        p = m.group(1).strip()
+        if "/" in p and not any(ch in p for ch in "<>{}*"):
+            out.add(p)
+    return out
+
+
+def _dir_names(max_depth=3):
+    """Set of directory names in the vault up to max_depth. Ignored dirs are
+    recorded (they exist on disk) but not descended into."""
+    patterns = _load_ignore()
+    names = set()
+    root = str(VAULT)
+    for dirpath, dirnames, _files in os.walk(root):
+        rel = os.path.relpath(dirpath, root)
+        rel = "" if rel == "." else rel.replace(os.sep, "/")
+        depth = 0 if not rel else rel.count("/") + 1
+        visible = [d for d in dirnames if not d.startswith(".")]
+        names.update(visible)
+        dirnames[:] = [
+            d for d in visible
+            if not _ignored((rel + "/" + d) if rel else d, patterns)
+        ]
+        if depth >= max_depth:
+            dirnames[:] = []
+    return names
+
+
+def _check_maps():
+    """Verify map files and entry points: listed paths exist on disk, real
+    skills/agents/systems are listed, vault_map's diagram matches the tree."""
+    missing_paths = []   # listed in a map/entry point but not on disk
+    unlisted = []        # exists on disk but missing from its map
+
+    def listed_paths_exist(rel):
+        p = VAULT / rel
+        if not p.exists():
+            return ""
+        text = p.read_text(encoding="utf-8")
+        for ref in sorted(_extract_md_paths(text)):
+            if not (VAULT / ref).exists():
+                missing_paths.append({"map": rel, "path": ref})
+        return text
+
+    skill_text = listed_paths_exist("Context/Maps/skill_map.md")
+    agent_text = listed_paths_exist("Context/Maps/agent_map.md")
+    systems_text = listed_paths_exist("Context/Maps/systems_map.md")
+    listed_paths_exist("main.md")
+    listed_paths_exist("CLAUDE.md")
+
+    for pat, text, map_rel in (
+        ("Context/Skills/*/SKILL.md", skill_text, "skill_map.md"),
+        (".claude/skills/*/SKILL.md", skill_text, "skill_map.md"),
+        ("Context/Agents/*/AGENT.md", agent_text, "agent_map.md"),
+        ("Context/Systems/*.md", systems_text, "systems_map.md"),
+    ):
+        for p in sorted(VAULT.glob(pat)):
+            rel = str(p.relative_to(VAULT))
+            # HUMAN.md files are folder documentation, not registrable entries.
+            if "/Archive/" in rel or p.name == "HUMAN.md":
+                continue
+            if text and rel not in text:
+                unlisted.append({"map": map_rel, "path": rel})
+
+    # vault_map structure diagram vs the real tree, both directions.
+    vault_map_drift = []
+    vm = VAULT / "Context/Maps/vault_map.md"
+    if vm.exists():
+        text = vm.read_text(encoding="utf-8")
+        fence = re.search(r"```(.*?)```", text, re.S)
+        on_disk = _dir_names()
+        if fence:
+            drawn = set(re.findall(r"([A-Za-z][\w.-]*)/", fence.group(1))) - {"YourVault"}
+            for name in sorted(drawn - on_disk):
+                vault_map_drift.append({"issue": "listed folder not on disk", "folder": name})
+        top_level = {d.name for d in VAULT.iterdir()
+                     if d.is_dir() and not d.name.startswith(".")
+                     and not _ignored(d.name, _load_ignore())}
+        for name in sorted(top_level):
+            if name not in text:
+                vault_map_drift.append({"issue": "top-level folder not in vault_map", "folder": name})
+
+    return {"missing_paths": missing_paths, "unlisted": unlisted,
+            "vault_map_drift": vault_map_drift}
+
+
+# Folders whose notes follow a shared structured format — the cosmetic
+# heading-spacing check applies only here, not to personal/free-form notes.
+_STRUCTURED_DIRS = ("Context/Skills/", "Context/Systems/", "Context/Agents/",
+                    "Context/Maps/", "Context/Guide/", "Start_Here/")
+
+
+def _lint_notes():
+    """Deterministic format checks with file+line. Detection only."""
+    findings = []
+    folder_h2s = {}
+    patterns = _load_ignore()
+    for abs_path, rel in _iter_files(patterns):
+        if not rel.endswith(".md"):
+            continue
+        try:
+            lines = Path(abs_path).read_text(encoding="utf-8").splitlines()
+        except OSError:
+            continue
+        structured = rel.startswith(_STRUCTURED_DIRS) and "/Archive/" not in rel
+        in_fence = False
+        h2s = set()
+        for i, line in enumerate(lines, 1):
+            if line.lstrip().startswith("```"):
+                in_fence = not in_fence
+                continue
+            if in_fence:
+                continue
+            # Inline code often holds syntax *examples* — never lint inside it.
+            bare = _INLINE_CODE.sub(" ", line)
+            if re.search(r"\[\[[^\[\]|]+\]\|", bare):
+                findings.append({"file": rel, "line": i,
+                                 "issue": "broken wikilink brackets ([[x]|y] -> [[x|y]])"})
+            if re.match(r"^#{1,6}\s+#{1,6}(\s|$)", bare):
+                findings.append({"file": rel, "line": i, "issue": "duplicate heading markers"})
+            m = re.match(r"^(#{2,})\s", line)
+            if m:
+                if len(m.group(1)) == 2:
+                    h2s.add(line.lstrip("#").strip())
+                nxt = lines[i] if i < len(lines) else ""
+                if structured and nxt.strip() and not nxt.startswith("#") and nxt.strip() != "---":
+                    findings.append({"file": rel, "line": i,
+                                     "issue": "missing blank line after heading"})
+        folder = rel.rsplit("/", 1)[0] if "/" in rel else "."
+        folder_h2s.setdefault(folder, []).append((rel, h2s))
+
+    # Sibling check: in folders of 4+ notes, flag files missing an H2 that
+    # 75%+ of their siblings have. History and Archive folders are exempt.
+    sibling_flags = []
+    for folder, files in folder_h2s.items():
+        if len(files) < 4 or "Archive" in folder or folder.startswith("Context/History"):
+            continue
+        counts = Counter(h for _rel, hs in files for h in hs)
+        common = [h for h, c in counts.items() if c >= max(3, math.ceil(0.75 * len(files)))]
+        for rel, hs in files:
+            missing = sorted(h for h in common if h not in hs)
+            if missing:
+                sibling_flags.append({"file": rel, "missing_headers": missing})
+
+    return {"findings": findings[:100], "sibling_flags": sibling_flags[:50]}
+
+
+def _archive_candidates():
+    """History notes no longer referenced (by filename or date) in the Open
+    section of open-work.md — candidates to move to Archive/, never auto-moved."""
+    open_text = ""
+    p = VAULT / "Context/History/open-work.md"
+    if p.exists():
+        md = p.read_text(encoding="utf-8")
+        m = re.search(r"(?ms)^##\s+Open\s*\n(.+?)(?=^##\s+Done|\Z)", md)
+        open_text = (m.group(1) if m else md).lower()
+    latest = _latest_session_file()
+    cands = []
+    for f in sorted((VAULT / "Context/History").glob("*.md")):
+        if f.name in ("open-work.md", "log.md") or (latest and f == latest):
+            continue
+        dm = re.match(r"(\d{4}-\d{2}-\d{2})", f.name)
+        date = dm.group(1) if dm else ""
+        if f.name.lower() not in open_text and not (date and date in open_text):
+            cands.append("Context/History/" + f.name)
+    return {"count": len(cands), "candidates": cands}
+
+
+def vault_health_core():
+    broken = find_broken_links_core()
+    orphans = find_orphans_core()
+    maps = _check_maps()
+    lint = _lint_notes()
+    archive = _archive_candidates()
+    counts = {
+        "broken_links": broken["count"],
+        "orphans": orphans["count"],
+        "map_issues": len(maps["missing_paths"]) + len(maps["unlisted"]) + len(maps["vault_map_drift"]),
+        "lint_findings": len(lint["findings"]) + len(lint["sibling_flags"]),
+        "archive_candidates": archive["count"],
+    }
+    return {
+        "clean": not any(counts.values()),
+        "counts": counts,
+        "broken_links": broken["broken_links"],
+        "orphans": orphans["orphans"],
+        "map_check": maps,
+        "lint": lint,
+        "archive_candidates": archive["candidates"],
+    }
+
+
+# --------------------------------------------------------------------------- #
 # Tool registry (name, description, JSON schema, handler, annotations)
 # --------------------------------------------------------------------------- #
 _RO = {"readOnlyHint": True, "openWorldHint": False}
@@ -699,6 +913,14 @@ def _tool_specs():
                         "description": "Status to filter by; omit to group all."}},
              "required": []},
          "annotations": _RO, "handler": list_by_status_core},
+
+        {"name": "vault_health",
+         "description": "One-call maintenance report: broken links, orphans, map/entry-point "
+                        "verification, format lint (with file+line), and archive-candidate "
+                        "history notes. Read-only — fixes nothing; the caller applies fixes "
+                        "from the report. Use for vault maintenance instead of scanning files.",
+         "inputSchema": {"type": "object", "properties": {}, "required": []},
+         "annotations": _RO, "handler": lambda: vault_health_core()},
     ]
 
 

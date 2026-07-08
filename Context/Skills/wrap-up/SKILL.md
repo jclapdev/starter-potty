@@ -18,19 +18,19 @@ Run the following steps in sequence. Do not skip steps — each one depends on t
 Review the full conversation for:
 - Anything that went wrong or required correction (approach taken, output format, missing context)
 - Anything that worked well and should be repeated
-- Patterns that suggest a missing skill, a gap in an existing skill, or a needed adjustment to a system rule or `main.md`
+- Patterns that suggest an improvement anywhere in the system: a missing or weak skill, a hook, a system or system rule, an agent, a scheduled task, or a `main.md` preference
+- Any mechanism (skill or system) whose behavior changed this session and whose user guide (`Context/Guide/<name>.md`) or glossary entry is now stale. A stale guide is a broken thing, fix it this session (see the Documentation Currency Rule in [[session-lifecycle]])
+- Any user-facing prose doc written or edited this session (a `Context/Guide/` page, the glossary, a `HUMAN.md`, a Wiki page, a report). Run the [[Context/Agents/prose-review/AGENT.md|prose-review]] agent over it (per [[document-workflow]] §5) and fold its rewrites into the approved fixes. The hook already caught the deterministic tells on write; this catches the judgment-layer ones it can't
 
-For each finding, categorize it as one of:
-- **Broken thing** — a factual error, stale reference, broken link, or internal inconsistency that makes a vault file objectively wrong. Distinct from the improvements below: there is one correct fix, not a judgment call.
-- **New skill candidate** — a repeatable process that doesn't have a skill yet
-- **Skill improvement** — an existing skill that needs updating
-- **System rule change** — a rule in `Context/Systems/` that needs adding or amending
-- **main.md adjustment** — a preference or behavior in `main.md` that needs updating
+For each finding, sort it into one of two kinds:
 
-Handle the two kinds of finding differently:
+- **Broken thing.** A factual error, stale reference, broken link, or internal inconsistency with one correct fix. Not a judgment call.
+- **Improvement.** Anything that would make the system work better: a new or changed skill, hook, agent, system, rule, or `main.md` preference. There is no fixed menu. If it would help, it counts.
 
-- **Broken things get fixed this session, never just logged.** A factual error, stale reference, or broken link has one correct fix, so fold it into the approved set automatically and apply it in Step 2. Surface it to the user as *fixed*, not proposed. If a fix can't be completed safely (it needs information, or the change is risky or irreversible), attempt what you can, then name the blocker and what's needed. Logging a fixable breakage for "later" is the failure mode this rule exists to prevent. It is what leaves standing flags.
-- **Improvements wait for approval.** New skills, skill or system-rule changes, and `main.md` adjustments are judgment calls. Present each and apply only what the user approves. Self-approving an improvement skips the point of this step.
+Handle them differently:
+
+- **Broken things get fixed this session, never just logged.** One correct fix exists, so fold it into the approved set and apply it in Step 2. Surface it as *fixed*, not proposed. If a fix can't be completed safely, attempt what you can, then name the blocker and what's needed.
+- **Improvements wait for approval, and you have to earn the proposal.** Research each one first (how others handle it, official guidance) and give a concrete reason before recommending it. Present each; apply only what the user approves. Don't propose vague or unresearched changes, and don't self-approve. Machine-local memory preferences don't need approval: save them and report what you saved.
 
 **Done when:** All findings are presented; broken-thing fixes are queued for Step 2; the user has approved or rejected each improvement; and no unresolved discussion remains.
 
@@ -44,7 +44,7 @@ Once the user has approved (or rejected) all findings from Step 1, compile the f
 - `session_date` — today's date (YYYY-MM-DD)
 - `session_slug` — a short kebab-case label for the handoff filename
 
-The agent handles Steps 2–5 (apply changes, vault-maintenance, update maps, update open-work, write handoff) in isolation. When it returns, surface any flagged issues to the user.
+The agent handles Steps 2–5 (apply changes, vault health check via the `vault_health` tool, update maps, update open-work, write handoff) in isolation. When it returns, surface any flagged issues to the user.
 
 **Done when:** Wrap-up agent returns STATUS: completed or partial. Any flagged issues presented to user.
 

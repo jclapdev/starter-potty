@@ -10,7 +10,7 @@ Skills live in two homes. Shared skills sit in `Context/Skills/` and work on eve
 | ------------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | vault-backlink-scan | [[Context/Skills/vault-backlink-scan/SKILL.md]] | Scans the vault for notes related to a target document and inserts wikilinks inline where the connection is substantive |
 | session-handoff     | [[Context/Skills/session-handoff/SKILL.md]]     | Writes an end-of-session handoff note to Context/History/ and reads the most recent one at session start              |
-| vault-maintenance   | [[Context/Skills/vault-maintenance/SKILL.md]]   | Systematic scan for broken references, stale map entries, orphaned links, and formatting inconsistencies; fixes safe issues automatically |
+| vault-maintenance   | [[Context/Skills/vault-maintenance/SKILL.md]]   | Judgment layer over the `vault_health` tool report (broken references, stale maps, orphans, lint): applies safe fixes, archives closed history notes, flags the rest |
 | note-decomposition  | [[Context/Skills/note-decomposition/SKILL.md]]  | Breaks a monolithic note into focused child files and replaces extracted content with wikilinks                        |
 | wrap-up             | [[Context/Skills/wrap-up/SKILL.md]]             | End-of-session orchestrator — reviews conversation, surfaces improvements for approval, updates maps and open work, writes session handoff |
 | theme-factory       | [[Context/Skills/theme-factory/SKILL.md]]       | Apply consistent professional styling (10 preset themes or custom) to artifacts: slides, docs, reports, HTML pages   |
