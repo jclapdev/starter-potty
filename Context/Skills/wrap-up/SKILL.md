@@ -34,19 +34,34 @@ Handle them differently:
 
 **Done when:** All findings are presented; broken-thing fixes are queued for Step 2; the user has approved or rejected each improvement; and no unresolved discussion remains.
 
-### Step 2 — Spawn Wrap-Up Agent
+### Step 2: Apply and Close (inline, no agent)
 
-Once the user has approved (or rejected) all findings from Step 1, compile the following and spawn the wrap-up agent (`Context/Agents/wrap-up/AGENT.md`):
+Once the user has approved (or rejected) all findings from Step 1, run the close-out directly. The mechanics live in two vault MCP tools, so this costs little context: no vault scanning, no subagent.
 
-- `approved_changes` — the list of approved changes with type, file path, and content/diff
-- `session_summary` — a narrative of what was built or decided this session
-- `open_work_changes` — items to add, edit, close, or remove from open-work.md
-- `session_date` — today's date (YYYY-MM-DD)
-- `session_slug` — a short kebab-case label for the handoff filename
+1. **Apply approved changes.** Write or edit each approved file. A new skill or system also gets its row added to `skill_map.md` / `systems_map.md`, and `vault_map.md` gets any new top-level folder.
+2. **Health check with fixes.** Call `vault_health` with `fix: true`. The server applies the deterministic safe fixes itself (unambiguous link and map-path repoints, mechanical lint) and returns what it fixed, what it skipped, and what remains. Resolve any remaining findings that have one clear fix; surface the ambiguous ones to the user. Do not scan vault files yourself. If the tool is unavailable (connector down), skip this and say so.
+3. **Close the session.** Call `wrap_session` with one payload: `session_date` (YYYY-MM-DD), `session_slug` (short kebab-case label), `handoff` (the full handoff note, format below), `open_work_changes` (items to add/edit/close/remove), `current_focus` (one-paragraph replacement for the focus line), and `archive` (any history notes from the health report's archive candidates whose open items are plainly inactive; when in doubt, leave the note and flag it). The tool writes the handoff file, reconciles open-work.md, and moves the archived notes. Report any errors it returns.
 
-The agent handles Steps 2–5 (apply changes, vault health check via the `vault_health` tool, update maps, update open-work, write handoff) in isolation. When it returns, surface any flagged issues to the user.
+**Handoff note format** (composed by you, written verbatim by the tool):
 
-**Done when:** Wrap-up agent returns STATUS: completed or partial. Any flagged issues presented to user.
+```
+# Session Handoff — {date} — {Slug Title Case}
+
+---
+
+## What Was Built
+
+## Decisions Made
+
+## In Progress
+
+## Next Steps
+(top 3–5 open items, priority order — see open-work.md)
+```
+
+Keep it readable in under two minutes, pure narrative; item tracking lives in open-work.md. Wrap the first mention of each vault note the session touched as a wikilink (use the full-path-plus-alias form for shared basenames like SKILL.md); never link a note that does not exist.
+
+**Done when:** Approved changes are on disk, the health report is clean or its leftovers are surfaced, and `wrap_session` returned no errors.
 
 ---
 

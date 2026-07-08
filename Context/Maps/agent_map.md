@@ -8,9 +8,7 @@ _For how agents work, see [[agent-system]] at `Context/Systems/agent-system.md`.
 
 | Agent | Path | Purpose | Triggered By |
 |---|---|---|---|
-| wrap-up | [[Context/Agents/wrap-up/AGENT.md]] | Applies approved session changes, updates maps and open-work, writes handoff note (steps 2–5 of the wrap-up process) | wrap-up skill after Step 1 approval |
 | backlink-scan | [[Context/Agents/backlink-scan/AGENT.md]] | Scans vault for notes related to a target document and inserts wikilinks where connection is substantive | After any new note or skill is created; on demand |
 | skill-eval-runner | [[Context/Agents/skill-eval-runner/AGENT.md]] | Runs a single eval prompt with or without a skill and saves outputs + timing data | skill-creator (spawns pairs in parallel) |
-| handoff-writer | [[Context/Agents/handoff-writer/AGENT.md]] | Writes the session handoff note to Context/History/ from a structured summary | wrap-up agent (step 5) |
 | agent-detector | [[Context/Agents/agent-detector/AGENT.md]] | Analyzes recent session history to identify tasks that would benefit from becoming a new agent; surfaces candidates with justification | On demand; periodically during vault maintenance |
 | prose-review | [[Context/Agents/prose-review/AGENT.md]] | Fresh-eyes reviewer for the judgment-layer AI-language tells the vault-verify hook can't catch (rule-of-three, tone, audience-wrong jargon); returns flagged lines and rewrites | Before finalizing a user-facing prose doc; over session docs at wrap-up |

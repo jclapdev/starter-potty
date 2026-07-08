@@ -5,7 +5,7 @@ Replaces loading whole files into context with targeted lookups. Each tool
 returns only what matches, so per-task overhead stops growing as the vault
 grows.
 
-Tools (all read-only):
+Tools (read-only unless noted):
   Navigation / selection
     - find_skill(query)            → best-matching skills (BM25 over SKILL.md)
     - resolve_agent(task)          → best-matching sub-agents (BM25 over AGENT.md)
@@ -23,8 +23,12 @@ Tools (all read-only):
     - vault_tree(path, depth)      → compact folder/file layout
     - list_by_status(status)       → notes by validated `status` frontmatter field
   Maintenance
-    - vault_health()               → one-call maintenance report (links, orphans,
-                                     maps, lint, archive candidates); read-only
+    - vault_health(fix)            → one-call maintenance report (links, orphans,
+                                     maps, lint, archive candidates); fix=true also
+                                     applies the deterministic safe fixes (writes)
+  Session close
+    - wrap_session(...)            → writes the handoff note, applies open-work
+                                     changes, archives history notes (writes)
 
 A single mtime-cached index backs every tool below find_skill/resolve_agent, so
 a query reparses only the files that changed since the last call. The index
@@ -612,7 +616,8 @@ def list_by_status_core(status=None):
 
 
 # --------------------------------------------------------------------------- #
-# Core logic — vault_health (deterministic maintenance report; fixes nothing)
+# Core logic — vault_health (deterministic maintenance report; fix=True also
+# applies the safe subset: unambiguous link/map repoints and mechanical lint)
 # --------------------------------------------------------------------------- #
 _PATH_REF = re.compile(r"(?:`|\[\[)([^`\[\]|\n]+\.md)(?:`|\]\]|\|)")
 
@@ -789,7 +794,7 @@ def _archive_candidates():
     return {"count": len(cands), "candidates": cands}
 
 
-def vault_health_core():
+def _health_report():
     broken = find_broken_links_core()
     orphans = find_orphans_core()
     maps = _check_maps()
@@ -811,6 +816,263 @@ def vault_health_core():
         "lint": lint,
         "archive_candidates": archive["candidates"],
     }
+
+
+_FOLDER_NAMED = ("agent", "skill", "index", "readme")
+
+
+def _display_target(rel):
+    """Canonical wikilink text for a note path: the full path for folder-named
+    files (Obsidian resolves by basename, so AGENT/SKILL need the path),
+    otherwise the file stem (real case)."""
+    stem = rel.rsplit("/", 1)[-1]
+    if stem.lower().endswith(".md"):
+        stem = stem[:-3]
+    if stem.lower() in _FOLDER_NAMED and "/" in rel:
+        return rel
+    return stem
+
+
+def _fix_broken_links(broken):
+    """Repoint broken wikilinks whose target squash-matches exactly one note
+    (case/punctuation drift, or a folder-named file whose folder moved).
+    Anything else is skipped."""
+    index = _build_index()
+
+    def squash(s):
+        return re.sub(r"[^a-z0-9]", "", s.lower())
+
+    smap = {}
+    for key, rels in index["by_key"].items():
+        smap.setdefault(squash(key), set()).update(rels)
+    fixed, skipped = [], []
+    for b in broken:
+        base, _full = _norm_key(b["target"])
+        # AGENT/SKILL-style targets: the folder is the identity, not the
+        # basename — and the basename disambiguates (wrap-up the skill vs
+        # wrap-up the archived agent).
+        want_base = None
+        if base in _FOLDER_NAMED and "/" in b["target"]:
+            want_base = base + ".md"
+            base = b["target"].split("/")[-2]
+        rels = smap.get(squash(base or ""), set())
+        if want_base:
+            rels = {r for r in rels if r.rsplit("/", 1)[-1].lower() == want_base}
+        if len(rels) != 1:
+            skipped.append({"kind": "broken_link", "file": b["source"],
+                            "target": b["target"],
+                            "reason": "%d candidate notes" % len(rels)})
+            continue
+        new = _display_target(next(iter(rels)))
+        src = VAULT / b["source"]
+        try:
+            text = src.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        pat = re.compile(r"\[\[\s*" + re.escape(b["target"]) + r"\s*(?=[#|\]])")
+        new_text = pat.sub("[[" + new, text)
+        if new_text != text:
+            src.write_text(new_text, encoding="utf-8")
+            fixed.append({"kind": "broken_link", "file": b["source"],
+                          "old": b["target"], "new": new})
+    return fixed, skipped
+
+
+def _fix_map_paths(missing):
+    """Repoint map rows whose listed .md path no longer exists. Candidates are
+    on-disk files with the same basename that the map does not already list —
+    for folder-named files (SKILL.md/AGENT.md) that is the renamed folder, for
+    plain notes a move that kept the filename. Only a unique candidate is
+    applied; anything else is skipped for the caller."""
+    all_rels = [rel for _a, rel in _iter_files(_load_ignore())]
+    fixed, skipped = [], []
+    for item in missing:
+        ref = item["path"]
+        base = ref.rsplit("/", 1)[-1]
+        map_file = VAULT / item["map"]
+        try:
+            text = map_file.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        cands = [r for r in all_rels
+                 if r.rsplit("/", 1)[-1] == base and r != ref and r not in text
+                 and "/Archive/" not in r]
+        if len(cands) != 1:
+            skipped.append({"kind": "map_path", "file": item["map"], "path": ref,
+                            "reason": "%d on-disk candidates" % len(cands)})
+            continue
+        if ref in text:
+            map_file.write_text(text.replace(ref, cands[0]), encoding="utf-8")
+            fixed.append({"kind": "map_path", "file": item["map"],
+                          "old": ref, "new": cands[0]})
+    return fixed, skipped
+
+
+def _fix_lint(findings):
+    """Apply the three mechanical lint fixes in place, bottom-up per file so
+    reported line numbers stay valid while editing."""
+    fixed, skipped = [], []
+    by_file = {}
+    for f in findings:
+        by_file.setdefault(f["file"], []).append(f)
+    for rel, items in by_file.items():
+        p = VAULT / rel
+        try:
+            lines = p.read_text(encoding="utf-8").splitlines()
+        except OSError:
+            continue
+        changed = False
+        for f in sorted(items, key=lambda x: -x["line"]):
+            i = f["line"] - 1
+            issue = f["issue"]
+            if i >= len(lines):
+                continue
+            if issue.startswith("missing blank line"):
+                lines.insert(i + 1, "")
+            elif issue.startswith("broken wikilink brackets"):
+                new = re.sub(r"\[\[([^\[\]|]+)\]\|([^\[\]]+)\]\]?", r"[[\1|\2]]", lines[i])
+                if new == lines[i]:
+                    continue
+                lines[i] = new
+            elif issue.startswith("duplicate heading markers"):
+                new = re.sub(r"^(#{1,6})\s+#{1,6}\s*", r"\1 ", lines[i])
+                if new == lines[i]:
+                    continue
+                lines[i] = new
+            else:
+                skipped.append({"kind": "lint", "file": rel, "line": f["line"],
+                                "issue": issue, "reason": "no mechanical fix"})
+                continue
+            changed = True
+            fixed.append({"kind": "lint", "file": rel, "line": f["line"], "issue": issue})
+        if changed:
+            p.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return fixed, skipped
+
+
+def vault_health_core(fix=False):
+    report = _health_report()
+    if not fix:
+        return report
+    fixed, skipped = [], []
+    for f, s in (_fix_broken_links(report["broken_links"]),
+                 _fix_map_paths(report["map_check"]["missing_paths"]),
+                 _fix_lint(report["lint"]["findings"])):
+        fixed += f
+        skipped += s
+    report = _health_report()  # fresh pass: the report now shows only what remains
+    report["fixes_applied"] = fixed
+    report["fix_skipped"] = skipped
+    return report
+
+
+# --------------------------------------------------------------------------- #
+# Core logic — wrap_session (session-close mechanics: handoff file, open-work
+# reconciliation, history archiving; the caller composes all prose)
+# --------------------------------------------------------------------------- #
+_ITEM_SPLIT = re.compile(r"(?m)^(?=### )")
+_PRIORITY_TAG = re.compile(r"\s*\[(?:NOW|NEXT|BLOCKED[^\]]*)\]")
+
+
+def wrap_session_core(session_date, session_slug, handoff,
+                      open_work_changes=None, current_focus=None, archive=None):
+    if not re.match(r"^\d{4}-\d{2}-\d{2}$", str(session_date)):
+        return {"error": "session_date must be YYYY-MM-DD"}
+    if not re.match(r"^[a-z0-9][a-z0-9-]*$", str(session_slug)):
+        return {"error": "session_slug must be kebab-case (lowercase, hyphens)"}
+    errors, applied, archived = [], [], []
+
+    hist = VAULT / "Context" / "History"
+    hpath = hist / ("%s-%s.md" % (session_date, session_slug))
+    overwrote = hpath.exists()
+    hpath.write_text(str(handoff).rstrip() + "\n", encoding="utf-8")
+
+    ow = hist / "open-work.md"
+    if (open_work_changes or current_focus) and not ow.exists():
+        errors.append("open-work.md not found")
+    elif open_work_changes or current_focus:
+        text = ow.read_text(encoding="utf-8")
+        m = re.search(r"(?ms)^## Open\s*\n(.*?)(^## Done\s*\n)", text)
+        if not m:
+            errors.append("open-work.md: '## Open' ... '## Done' sections not found")
+        else:
+            header = text[:m.start(1)]
+            done_head, done_body = m.group(2), text[m.end(2):]
+            chunks = [c for c in _ITEM_SPLIT.split(m.group(1)) if c.strip()]
+            preamble = ""
+            if chunks and not chunks[0].startswith("### "):
+                preamble = chunks.pop(0)
+            items = []
+            for c in chunks:
+                first, _, rest = c.partition("\n")
+                items.append([first.rstrip(), rest.strip()])
+
+            def find(key):
+                kl = (key or "").lower()
+                return [i for i, it in enumerate(items) if kl and kl in it[0].lower()]
+
+            for ch in (open_work_changes or []):
+                act = str(ch.get("action", "")).lower()
+                if act == "add":
+                    if not ch.get("title"):
+                        errors.append("add: missing title")
+                        continue
+                    item = ["### " + ch["title"], str(ch.get("body", "")).strip()]
+                    items.insert(0, item) if ch.get("position") == "top" else items.append(item)
+                    applied.append("add: " + ch["title"])
+                elif act in ("edit", "close", "remove"):
+                    hits = find(ch.get("match"))
+                    if len(hits) != 1:
+                        errors.append("%s: match %r hit %d items" % (act, ch.get("match"), len(hits)))
+                        continue
+                    i = hits[0]
+                    if act == "edit":
+                        if ch.get("title"):
+                            items[i][0] = "### " + ch["title"]
+                        if ch.get("body") is not None:
+                            items[i][1] = str(ch["body"]).strip()
+                    elif act == "close":
+                        heading, body = items.pop(i)
+                        heading = _PRIORITY_TAG.sub("", heading).rstrip()
+                        done_body = "%s\n%s\n\n%s" % (
+                            heading, str(ch.get("summary") or body).strip(), done_body)
+                    else:
+                        items.pop(i)
+                    applied.append("%s: %s" % (act, ch.get("match")))
+                else:
+                    errors.append("unknown action %r" % ch.get("action"))
+
+            if current_focus:
+                new_header = re.sub(r"(?m)^Current focus:.*$",
+                                    "Current focus: " + str(current_focus).strip(),
+                                    header, count=1)
+                if new_header == header:
+                    errors.append("'Current focus:' line not found in open-work.md header")
+                header = new_header
+
+            open_body = "".join("%s\n\n%s" % (h, b + "\n\n" if b else "") for h, b in items)
+            if preamble.strip():
+                open_body = preamble.rstrip() + "\n\n" + open_body
+            ow.write_text(header + open_body + done_head + done_body, encoding="utf-8")
+
+    for rel in (archive or []):
+        rel = str(rel).strip()
+        name = rel.rsplit("/", 1)[-1]
+        if (not rel.startswith("Context/History/") or "/Archive/" in rel
+                or name in ("open-work.md", "log.md")):
+            errors.append("archive: refusing %r" % rel)
+            continue
+        src = VAULT / rel
+        if not src.exists():
+            errors.append("archive: not found %r" % rel)
+            continue
+        dst = VAULT / "Context" / "History" / "Archive"
+        dst.mkdir(parents=True, exist_ok=True)
+        src.rename(dst / name)
+        archived.append(rel)
+
+    return {"handoff": str(hpath.relative_to(VAULT)), "overwrote": overwrote,
+            "open_work_applied": applied, "archived": archived, "errors": errors}
 
 
 # --------------------------------------------------------------------------- #
@@ -917,10 +1179,55 @@ def _tool_specs():
         {"name": "vault_health",
          "description": "One-call maintenance report: broken links, orphans, map/entry-point "
                         "verification, format lint (with file+line), and archive-candidate "
-                        "history notes. Read-only — fixes nothing; the caller applies fixes "
-                        "from the report. Use for vault maintenance instead of scanning files.",
-         "inputSchema": {"type": "object", "properties": {}, "required": []},
-         "annotations": _RO, "handler": lambda: vault_health_core()},
+                        "history notes. With fix=true it also applies the deterministic safe "
+                        "fixes (unambiguous link and map-path repoints, mechanical lint) and "
+                        "reports what it fixed, skipped, and what remains for the caller. "
+                        "Use for vault maintenance instead of scanning files.",
+         "inputSchema": {"type": "object", "properties": {
+             "fix": {"type": "boolean", "default": False,
+                     "description": "Apply the safe fixes, not just report them."}},
+             "required": []},
+         "annotations": {"readOnlyHint": False, "openWorldHint": False},
+         "handler": vault_health_core},
+
+        {"name": "wrap_session",
+         "description": "Session-close mechanics in one call: writes the handoff note to "
+                        "Context/History/<date>-<slug>.md verbatim, applies structured "
+                        "open-work.md changes (add/edit/close/remove items, update the "
+                        "'Current focus:' line), and moves named history notes to Archive/. "
+                        "The caller composes all prose; this tool only applies it.",
+         "inputSchema": {"type": "object", "properties": {
+             "session_date": {"type": "string", "description": "YYYY-MM-DD."},
+             "session_slug": {"type": "string",
+                              "description": "Kebab-case label for the handoff filename."},
+             "handoff": {"type": "string",
+                         "description": "Full markdown content of the handoff note, "
+                                        "written verbatim (include the H1)."},
+             "open_work_changes": {"type": "array", "items": {"type": "object", "properties": {
+                 "action": {"type": "string", "enum": ["add", "edit", "close", "remove"]},
+                 "match": {"type": "string",
+                           "description": "Heading substring (edit/close/remove); must hit "
+                                          "exactly one Open item."},
+                 "title": {"type": "string",
+                           "description": "Heading text without '### ', including the "
+                                          "[NOW]/[NEXT]/[BLOCKED] tag (add, or retitle on edit)."},
+                 "body": {"type": "string", "description": "Item body markdown (add/edit)."},
+                 "summary": {"type": "string",
+                             "description": "Done-entry body when closing (defaults to the "
+                                            "item's current body)."},
+                 "position": {"type": "string", "enum": ["top", "bottom"],
+                              "description": "Where to insert an added item (default bottom)."}},
+                 "required": ["action"]},
+                 "description": "Changes to the Open section of open-work.md."},
+             "current_focus": {"type": "string",
+                               "description": "Replacement text for the 'Current focus:' "
+                                              "line (label added automatically)."},
+             "archive": {"type": "array", "items": {"type": "string"},
+                         "description": "Vault-relative Context/History/ notes to move "
+                                        "to Archive/."}},
+             "required": ["session_date", "session_slug", "handoff"]},
+         "annotations": {"readOnlyHint": False, "openWorldHint": False},
+         "handler": wrap_session_core},
     ]
 
 
@@ -928,7 +1235,7 @@ def _tool_specs():
 # Minimal MCP stdio server (JSON-RPC 2.0 over newline-delimited stdin/stdout)
 # --------------------------------------------------------------------------- #
 PROTOCOL_VERSION = "2024-11-05"
-SERVER_INFO = {"name": "vault", "version": "2.0.0"}
+SERVER_INFO = {"name": "vault", "version": "2.1.0"}
 
 # --------------------------------------------------------------------------- #
 # Rule injection: give clients that don't load CLAUDE.md themselves (Claude

@@ -23,9 +23,9 @@ The scan itself is deterministic and lives in the vault MCP server's `vault_heal
 
 ## Process
 
-### 1. Get the report
+### 1. Get the report, with fixes applied
 
-Call the `vault_health` tool (vault MCP server). It returns:
+Call the `vault_health` tool (vault MCP server) with `fix: true`. The server applies the deterministic safe fixes itself (unambiguous link and map-path repoints, mechanical lint) and returns `fixes_applied`, `fix_skipped`, and a fresh report of what remains:
 
 - **broken_links**: wikilinks and path references that resolve to nothing
 - **orphans**: notes with no inbound links (entry points already exempted)
@@ -35,13 +35,12 @@ Call the `vault_health` tool (vault MCP server). It returns:
 
 If the tool is unavailable, the vault connector is not running. Tell the user the fix (run `python AI-Workshop/install.py`, then fully quit and restart Claude) and stop. Do not fall back to scanning files by hand.
 
-### 2. Apply safe fixes
+### 2. Handle what the server left
 
-Safe fixes (make without asking):
+The server only fixes what is provably unambiguous, so the remaining findings are the judgment layer. Still safe to fix yourself (make without asking):
 
-- Update a reference where the old and new names are unambiguous (one clear match in the vault)
-- Update map table rows where a skill or system was renamed or its path is stale with one clear match
-- Lint findings from the report (the report gives file, line, and issue)
+- A reference in `fix_skipped` whose correct target is clear from context the server lacks (one obvious match once you know the session's renames)
+- A map row for a skill or system this session added or renamed
 
 Unsafe (flag for the user, do not fix):
 

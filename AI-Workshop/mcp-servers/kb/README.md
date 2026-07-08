@@ -91,7 +91,7 @@ If the KB server is unavailable, continue without it — do not abort.
 Call mcp__kb__record_fix(tool="<this-tool>", problem="...", fix="...").
 ```
 
-**Current state:** the active agents are all vault-meta agents (wrap-up, backlink-scan, handoff-writer, skill-eval-runner, agent-detector, prose-review); none debug external tools, so none is a correct home for this fast-path yet. Wire it in when a tool-problem-solving agent exists (e.g. a comic-generator agent for the ComfyUI pipeline).
+**Current state:** the active agents are all vault-meta agents (backlink-scan, skill-eval-runner, agent-detector, prose-review); none debug external tools, so none is a correct home for this fast-path yet. Wire it in when a tool-problem-solving agent exists (e.g. a comic-generator agent for the ComfyUI pipeline).
 
 ## Verification
 

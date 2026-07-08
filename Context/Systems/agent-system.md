@@ -43,13 +43,13 @@ Each agent lives in `Context/Agents/<agent-name>/AGENT.md`. The file is the agen
 ```
 Context/Agents/
 ├── TEMPLATE.md           # Standard template for new agents
-├── wrap-up/
+├── agent-detector/
 │   └── AGENT.md
 ├── backlink-scan/
 │   └── AGENT.md
-├── skill-eval-runner/
+├── prose-review/
 │   └── AGENT.md
-└── handoff-writer/
+└── skill-eval-runner/
     └── AGENT.md
 ```
 
