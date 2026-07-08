@@ -10,7 +10,8 @@ node_modules/
 .mcp.json
 *.bak
 AI-Workshop/mcp-servers/kb/data/
-/.claude/
+/.claude/settings.local.json
+/.claude/worktrees/
 
 # Per-machine UI / session state; regenerates constantly, pure diff noise
 .claudian/sessions/
