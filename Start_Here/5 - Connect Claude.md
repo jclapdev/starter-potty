@@ -12,15 +12,15 @@ Keep the `ClaudeVault` folder in your **home folder** (`~/ClaudeVault` on Mac, `
 
 (This is because the Claude desktop app only opens a folder whose real location is inside your home folder. Some computers relocate the Desktop and Documents folders via OneDrive or iCloud, so a folder placed directly on the Desktop can be rejected. The shortcut sidesteps that for everyone. If you put the vault somewhere outside your home folder, setup will tell you.)
 
-## First: run setup (one time)
+## First: run the installer (one time)
 
 This registers the vault's helper servers and works on macOS, Windows, and Linux. You need Python installed (3.9 or newer). Open a terminal in this folder and run:
 
 ```bash
-python AI-Workshop/setup.py
+python AI-Workshop/install.py
 ```
 
-It writes the config each Claude app needs, using your own machine's paths, and sets up the knowledge base (the first time this downloads about 1 GB, so give it a few minutes). Restart Claude afterward.
+It writes the config each Claude app needs, using your own machine's paths, and sets up the knowledge base (the first time this downloads about 1 GB, so give it a few minutes). Restart Claude afterward. You can delete the file when it's done; run it again anytime to reconfigure or update.
 
 ## Option A: Claude desktop app (easiest)
 

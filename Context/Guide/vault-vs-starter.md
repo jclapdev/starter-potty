@@ -1,11 +1,11 @@
 ---
 tags: [guide]
-covers: AI-Workshop/maintainer/build-starter.py
+covers: AI-Workshop/public-version/build-starter.py
 ---
 
 # Vault vs. Starter
 
-_User guide. The plain-language companion to the AI reference in `AI-Workshop/maintainer/build-starter.py`._
+_User guide. The plain-language companion to the AI reference in `AI-Workshop/public-version/build-starter.py`._
 
 ## What it's for
 
@@ -16,11 +16,11 @@ Keeping your private vault and the shareable system template as two separate thi
 There are two git repos, not one.
 
 - **Your vault** (`potty_box`) is your real Obsidian vault. It holds everything personal: your projects, session history, open-work, memory, and your `main.md` identity. This is private to you. Day-to-day work is committed here.
-- **The Starter** (`starter-potty`) is a clean template *generated from* your vault by `build-starter.py`. It carries only the reusable system: `CLAUDE.md`, `Context/Systems`, `Skills`, `Agents`, the `AI-Workshop` machinery, the installers, and empty placeholder files. It lives in its own repo.
+- **The Starter** (`starter-potty`) is a clean template *generated from* your vault by `build-starter.py`. It carries only the reusable system: `CLAUDE.md`, `Context/Systems`, `Skills`, `Agents`, the `AI-Workshop` machinery, the `install.py` setup script, and empty placeholder files. It lives in its own repo.
 
-`build-starter.py` copies by a whitelist. Only the paths it names get copied. Personal folders (`Projects/`, `History`, `Memory`, `Maps`, personal `main.md`) are not on that list, so they never ship. Handcrafted template files live in `AI-Workshop/starter-overlay/` and are laid on top.
+`build-starter.py` copies by a whitelist. Only the paths it names get copied. Personal folders (`Projects/`, `History`, `Memory`, `Maps`, personal `main.md`) are not on that list, so they never ship. Handcrafted template files live in `AI-Workshop/public-version/starter-overlay/` and are laid on top.
 
-Someone else installs the system by running `update.py`, which **downloads the Starter as a zip** and copies files into place. A zip has no git history and no remote. Their machine ends up with the system but no connection to your repos, so they cannot push to `potty_box` or `starter-potty`.
+Someone else installs the system by **downloading the Starter** (a zip, or the repo) and running `install.py`. A downloaded zip has no git history and no remote. Their machine ends up with the system but no connection to your repos, so they cannot push to `potty_box` or `starter-potty`.
 
 ## When it touches you
 
@@ -36,5 +36,5 @@ Someone else installs the system by running `update.py`, which **downloads the S
 
 ## Dig deeper →
 
-- AI reference (the exact procedure): `AI-Workshop/maintainer/build-starter.py`
+- AI reference (the exact procedure): `AI-Workshop/public-version/build-starter.py`
 - Glossary: [[glossary]] (related terms)

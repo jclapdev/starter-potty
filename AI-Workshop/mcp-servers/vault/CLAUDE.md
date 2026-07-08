@@ -2,7 +2,7 @@
 
 **No install needed.** Pure Python stdlib (3.7+). Any system `python3` runs it.
 
-**Run:** stdio transport, registered via `claude_desktop_config.json`. Set `VAULT_PATH` env var to the vault root (defaults to two levels above `server.py` if unset).
+**Run:** stdio transport, registered via `claude_desktop_config.json`. Set `VAULT_PATH` env var to the vault root (defaults to three levels above `server.py` if unset).
 
 **After editing `server.py`:** restart Claude Desktop to reload.
 

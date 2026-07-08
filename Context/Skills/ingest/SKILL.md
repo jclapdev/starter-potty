@@ -11,7 +11,7 @@ Compile a source into the vault's wiki layer. A single ingest should touch multi
 
 ## Setup
 
-The wiki lives at `AI-Workshop/Projects/Wiki/`. Sources you keep in the vault live in `Reference/`; bulk sources for the KB drop into the machine-local `AI-Workshop/kb-mcp/sources/` folder. When the user says to ingest something, confirm the source path before reading.
+The wiki lives at `AI-Workshop/Projects/Wiki/`. Sources you keep in the vault live in `Reference/`; bulk sources for the KB drop into the machine-local `AI-Workshop/mcp-servers/kb/sources/` folder. When the user says to ingest something, confirm the source path before reading.
 
 ---
 

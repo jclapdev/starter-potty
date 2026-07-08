@@ -32,8 +32,8 @@ ZERO DEPENDENCIES: implements the MCP stdio protocol (newline-delimited
 JSON-RPC 2.0) with the Python standard library only. Runs under any system
 python3 (>=3.7) with no venv and no pip install.
 
-Vault root resolves to VAULT_PATH if set, else the repo root two levels above
-this file (AI-Workshop/vault-mcp/server.py -> vault root).
+Vault root resolves to VAULT_PATH if set, else the repo root three levels above
+this file (AI-Workshop/mcp-servers/vault/server.py -> vault root).
 """
 from __future__ import annotations
 
@@ -46,7 +46,7 @@ from collections import Counter, deque
 from fnmatch import fnmatch
 from pathlib import Path
 
-VAULT = Path(os.environ.get("VAULT_PATH", str(Path(__file__).resolve().parents[2])))
+VAULT = Path(os.environ.get("VAULT_PATH", str(Path(__file__).resolve().parents[3])))
 
 # Fixed status vocabulary. The server validates against this, so the field
 # cannot drift into synonyms (#wip vs #in-progress) the way free tags would.

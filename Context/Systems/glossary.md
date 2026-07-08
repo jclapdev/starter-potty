@@ -1,6 +1,6 @@
 # Glossary
 
-_Plain-language definitions of the system's terms. One alphabetical list — search or grep for a word. Each entry gives the plain meaning, one line on when it touches you, and a link to its guide page where one exists._
+_Plain-language definitions of the system's terms, in one alphabetical list you can search. Each entry says what a term means and when it actually affects you, and links to the fuller guide page if there is one._
 
 _For how a mechanism works in depth, see its page in `Context/Guide/`. For the exact procedure the AI follows, see the linked `SKILL.md` or system file._
 
@@ -13,8 +13,8 @@ A focused background helper the AI hands a self-contained job to (for example, s
 
 ### connector / MCP
 
-An extra tool Claude can use, added through a small program called an MCP server. "Connector" is the app's word for it; "MCP" is the underlying standard. This system ships two: `vault` and `kb`.
-**Touches you:** when you add or build one, or when one "isn't showing up" — see [[Context/Guide/mcp-sync.md|mcp-sync]].
+An extra tool Claude can use, added through a small program called an MCP server. "Connector" is the app's word for it; "MCP" is the underlying standard. This system ships two: `vault` and `kb`. The installer (`AI-Workshop/install.py`) registers them in both Claude apps.
+**Touches you:** when you add or build one, or when one "isn't showing up" (re-run the installer, then restart the app).
 
 ### hook
 
@@ -23,18 +23,13 @@ A small check that runs automatically whenever Claude writes a file — for exam
 
 ### kb connector
 
-The knowledge-base connector (`kb`). Adds search-by-meaning over your notes, on top of plain text search. Set up by default; skip it with `setup.py --no-kb`.
+The knowledge-base connector (`kb`). Adds search-by-meaning over your notes, on top of plain text search. Set up by default; skip it with `install.py --no-kb`.
 **Touches you:** when you ask the AI to find notes by idea rather than exact words.
 
 ### map
 
 An index file that says where everything is and what exists (`skill_map`, `agent_map`, `systems_map`, `vault_map`). Maps keep navigation fast as the vault grows and are the source of truth for what's registered.
 **Touches you:** indirectly — the AI reads maps to orient. They must stay current, so they update whenever structure changes.
-
-### mcp-sync
-
-The mechanism that keeps your connectors identical across Claude Desktop and Claude Code, from one shared list.
-**Touches you:** when you add a connector, when one won't show up, or when the two apps disagree on what's connected — see [[Context/Guide/mcp-sync.md|mcp-sync]].
 
 ### session
 

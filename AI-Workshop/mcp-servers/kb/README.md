@@ -29,7 +29,7 @@ On startup the server scans `sources/` for new or changed `.md`/`.txt`/`.pdf` fi
 Heavy dependencies (LanceDB, sentence-transformers, pypdf) mean this server needs a virtual environment — unlike the stdlib-only `vault` server.
 
 ```bash
-cd AI-Workshop/kb-mcp
+cd AI-Workshop/mcp-servers/kb
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 ```
@@ -41,7 +41,7 @@ The first `query_patterns` / `record_fix` call downloads the `all-MiniLM-L6-v2` 
 For machines that ship with [`uv`](https://docs.astral.sh/uv/) (single binary, all platforms), you can skip the manual venv and wire the server as `uv run`, which reads `requirements.txt` and manages the environment automatically:
 
 ```json
-"kb": { "command": "uv", "args": ["run", "AI-Workshop/kb-mcp/server.py"] }
+"kb": { "command": "uv", "args": ["run", "AI-Workshop/mcp-servers/kb/server.py"] }
 ```
 
 This is the portable form to use when distributing via the Starter. It is **not** the form wired on this machine, because `uv` is not installed here.
@@ -52,8 +52,8 @@ This is the portable form to use when distributing via the Starter. It is **not*
 
 ```json
 "kb": {
-  "command": "/path/to/your-vault/AI-Workshop/kb-mcp/.venv/bin/python",
-  "args": ["/path/to/your-vault/AI-Workshop/kb-mcp/server.py"]
+  "command": "/path/to/your-vault/AI-Workshop/mcp-servers/kb/.venv/bin/python",
+  "args": ["/path/to/your-vault/AI-Workshop/mcp-servers/kb/server.py"]
 }
 ```
 

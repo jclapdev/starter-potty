@@ -54,22 +54,22 @@ The server uses **only the Python standard library** (Python 3.7+), so there is 
 
 ## Register it
 
-Run the cross-platform setup from the vault root; it registers this server in both Claude Code and Claude Desktop with the correct paths for your machine:
+Run the installer from the vault root; it registers this server in both Claude Code and Claude Desktop with the correct paths for your machine:
 
 ```bash
-python AI-Workshop/setup.py
+python AI-Workshop/install.py
 ```
 
-That writes the `vault` entry (and any others) into `.mcp.json` and the OS-correct Claude Desktop config, using the exact Python you ran setup with, then you restart the apps. You do not edit any config by hand, and there is no `python3`-vs-`python` problem to work around. See the root `HUMAN.md` for the full picture.
+That writes the `vault` entry (and any others) into `.mcp.json` and the OS-correct Claude Desktop config, using the exact Python you ran the installer with, then you restart the apps. You do not edit any config by hand, and there is no `python3`-vs-`python` problem to work around. See the root `HUMAN.md` for the full picture.
 
-`VAULT_PATH` is set for you by setup; if you ever run the server directly it defaults to the repo root two levels above `server.py`.
+`VAULT_PATH` is set for you by the installer; if you ever run the server directly it defaults to the repo root three levels above `server.py`.
 
 ## Quick check (optional)
 
 To confirm the tools work against your vault before registering:
 
 ```
-cd /path/to/your-vault/AI-Workshop/vault-mcp
+cd /path/to/your-vault/AI-Workshop/mcp-servers/vault
 python3 -c "import server; print(server.find_skill_core('wrap up the session', 2))"
 python3 -c "import server; print(server.get_open_work_core())"
 ```

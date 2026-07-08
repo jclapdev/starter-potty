@@ -1,6 +1,6 @@
 # Full install = core + optional file-type extractors.
 #
-# setup.py installs core first with a hard check (requirements-core.txt), then
+# install.py installs core first with a hard check (requirements-core.txt), then
 # this file best-effort. A manual `pip install -r requirements.txt` still gets
 # everything because the -r line below pulls the core in.
 -r requirements-core.txt

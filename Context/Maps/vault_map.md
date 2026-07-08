@@ -11,10 +11,8 @@ YourVault/
 ├── AI-Workshop/          # AI-managed working directory (Claude writes here)
 │   ├── Artifacts/        # HTML exports, rendered guides
 │   ├── hooks/            # PostToolUse hooks (vault-verify runs on every file write)
-│   ├── vault-mcp/        # Vault navigation MCP server (stdlib, read-only) — the `vault` connector
-│   ├── kb-mcp/           # Knowledge-base server (LanceDB + embeddings), the `kb` connector — set up by default
-│   ├── mcp-sync/         # Canonical server list + sync.py — registers servers in Claude Code and Desktop
-│   ├── setup.py          # One-command, cross-platform setup (run this first)
+│   ├── mcp-servers/      # System MCP servers: vault/ (navigation, stdlib) and kb/ (LanceDB knowledge base)
+│   ├── install.py        # Run once to set the system up on this machine, then delete it (also updates)
 │   ├── Projects/         # The AI's per-project working data
 │   │   └── Wiki/         # LLM-owned knowledge layer (source summaries, concept pages, filed analyses)
 │   └── Scheduled/        # Scheduled task files

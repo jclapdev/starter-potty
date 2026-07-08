@@ -47,8 +47,8 @@ KB_DATA_DIR = Path(os.environ.get("KB_DATA_PATH", str(_SERVER_DIR / "data")))
 KB_RESOURCES_DIR = Path(os.environ.get("KB_RESOURCES_PATH", str(_SERVER_DIR / "sources")))
 KB_MODEL_NAME = os.environ.get("KB_MODEL_NAME", "all-MiniLM-L6-v2")
 
-# Vault root (server lives at <vault>/AI-Workshop/kb-mcp/server.py).
-KB_VAULT_DIR = Path(os.environ.get("KB_VAULT_PATH", str(_SERVER_DIR.parent.parent)))
+# Vault root (server lives at <vault>/AI-Workshop/mcp-servers/kb/server.py).
+KB_VAULT_DIR = Path(os.environ.get("KB_VAULT_PATH", str(_SERVER_DIR.parent.parent.parent)))
 # Vault folders indexed on startup (tagged tool="vault") for semantic recall
 # over the system's own history, decisions, and memory. Override with
 # KB_INGEST_PATHS (os.pathsep-separated) — set to empty to disable.
