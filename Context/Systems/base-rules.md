@@ -41,6 +41,14 @@ When the user says "read your instructions" (or any clear equivalent at session 
 1. Read `Context/History/open-work.md` and the newest dated note in `Context/History/` directly, and surface the same LAST SESSION and OPEN WORK summary from them.
 2. Tell the user plainly: the vault connector isn't running, so lookups will be slower this session. The fix is to run `python AI-Workshop/install.py` in the vault folder, then fully quit and restart Claude.
 
+**First session in a fresh vault:** if there are no dated session notes in `Context/History/` and the open-work list is empty, this is a brand-new install, not a broken one. Do not report "nothing open" and stop. Instead:
+
+1. Welcome the user in a sentence or two: setup worked, and this vault is now their AI second brain.
+2. Point them at `Start_Here/Home.md` for the tour and `HUMAN.md` for the one-page overview.
+3. Offer two concrete first moves: fill in the Who I Am section of `main.md` together, or just start working and let the system learn as you go.
+
+Keep it short. No lecture, no tour of internals.
+
 **Do not run the navigation sequence at startup.** It fires only when a vault task begins.
 
 ---
