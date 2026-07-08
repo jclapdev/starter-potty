@@ -31,15 +31,15 @@ Handled by the startup sequence in `base-rules.md`, which calls `get_session_bri
 
 ## Skills
 
-Each skill lives in `Context/Skills/<skill-name>/SKILL.md`. Skill instructions extend system rules — they do not replace them. Read both.
+Skills live in two homes. Shared skills live in `Context/Skills/<skill-name>/SKILL.md` and work on every surface. Skills that need git or scripts (building MCP servers, creating skills, publishing updates) live in `.claude/skills/<skill-name>/SKILL.md`, which Claude Code and Claudian read natively and Desktop never sees. One home per skill, never both. Skill instructions extend system rules, they do not replace them. Read both.
 
 **Skills are built _from_ learning sessions, not from a cold spec.** When a new tool, plugin, or capability looks skill-worthy, do not jump straight to building. First run a dedicated _learning session_: use the tool together with the user, work out the best way to operate it, and capture what you learn as a wiki page (`AI-Workshop/Projects/Wiki/`, via the [[ingest]] pattern or a direct page). The skill is then built from those documented findings — workflows that were actually tried, not a guess at what the workflow should be. This is the standard path for every new skill from here on.
 
-**When building the skill, always route through skill-creator:** `Context/Skills/skill-creator/SKILL.md`. Do not write a SKILL.md directly without running that process — it exists to ensure skills are tested and validated, not just drafted. Feed it the learning-session findings as the starting intent.
+**When building the skill, always route through skill-creator:** `.claude/skills/skill-creator/SKILL.md`. Do not write a SKILL.md directly without running that process — it exists to ensure skills are tested and validated, not just drafted. Feed it the learning-session findings as the starting intent.
 
 Wrap-up still scans for skill opportunities (see `Context/Skills/wrap-up/SKILL.md`). Those scans surface _candidates for a learning session_, not skills to build on the spot: a flagged candidate becomes a queued learning session, and the skill follows once that session has produced findings.
 
-**Never look at the Cowork plugin skills directory** (e.g., `/var/folders/.../skills/` or any path containing `claude-hostloop-plugins`). That is a system directory for Cowork's own tools — not your skills. If a task involves skills, the only valid location is `Context/Skills/`.
+**Never look at the Cowork plugin skills directory** (e.g., `/var/folders/.../skills/` or any path containing `claude-hostloop-plugins`). That is a system directory for Cowork's own tools, not your skills. If a task involves skills, the only valid locations are `Context/Skills/` and `.claude/skills/`.
 
 ## Maintenance Rule
 

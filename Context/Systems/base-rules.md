@@ -36,6 +36,11 @@ When the user says "read your instructions" (or any clear equivalent at session 
 2. Surface the LAST SESSION and OPEN WORK sections from the brief.
 3. Stop. Wait for a task.
 
+**If `get_session_brief` is not available, do not improvise a startup.** The vault connector is not running. Do both of these instead:
+
+1. Read `Context/History/open-work.md` and the newest dated note in `Context/History/` directly, and surface the same LAST SESSION and OPEN WORK summary from them.
+2. Tell the user plainly: the vault connector isn't running, so lookups will be slower this session. The fix is to run `python AI-Workshop/install.py` in the vault folder, then fully quit and restart Claude.
+
 **Do not run the navigation sequence at startup.** It fires only when a vault task begins.
 
 ---

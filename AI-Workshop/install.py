@@ -46,6 +46,50 @@ def venv_python(venv_dir: Path) -> Path:
     return venv_dir / ("Scripts" if os.name == "nt" else "bin") / ("python.exe" if os.name == "nt" else "python")
 
 
+def suggested_home_spot() -> str:
+    return "C:\\Users\\<you>\\ClaudeVault" if os.name == "nt" else "~/ClaudeVault"
+
+
+def check_environment() -> bool:
+    """Catch the two things that break installs before doing any work:
+    an old Python, and a vault folder the Claude desktop app will reject.
+    Returns False when setup must stop."""
+    if sys.version_info < (3, 9):
+        print("FAIL  Python %d.%d is too old; this system needs Python 3.9 or newer."
+              % sys.version_info[:2])
+        print("      Install a current Python from python.org, then run this again.")
+        return False
+
+    home = Path.home().resolve()
+    path_str = str(VAULT)
+    # Cloud-synced locations: the folder's real location is not in the home
+    # folder, and the Claude desktop app refuses to open it.
+    synced = "OneDrive" in path_str or "Mobile Documents" in path_str
+    outside_home = not str(VAULT).startswith(str(home) + os.sep) and VAULT != home
+    if synced or outside_home:
+        why = ("it is inside a OneDrive/iCloud-synced folder" if synced
+               else "its real location is outside your home folder")
+        print("FAIL  This folder is at:  %s" % VAULT)
+        print("      Claude's desktop app will refuse to open it because %s." % why)
+        print("      (OneDrive and iCloud quietly move Desktop and Documents out of")
+        print("      your home folder — that is the confusing part.)")
+        print("\n      The fix, once:")
+        print("        1. Move this whole folder to %s" % suggested_home_spot())
+        print("        2. Open a terminal in the moved folder and run this script again.")
+        return False
+
+    try:
+        top = VAULT.relative_to(home).parts[0]
+    except ValueError:
+        top = ""
+    if top in ("Desktop", "Documents", "Downloads"):
+        print("WARN  This folder sits in your %s folder. That often works, but Desktop," % top)
+        print("      Documents, and Downloads are the folders OneDrive/iCloud relocate and")
+        print("      the ones that trigger extra permission prompts. If you hit folder-access")
+        print("      errors, move the vault to %s and run this again." % suggested_home_spot())
+    return True
+
+
 def desktop_config_path():
     """Claude Desktop config location for this OS (None if unknown)."""
     system = platform.system()
@@ -233,7 +277,7 @@ def _probe_vault_server(spec: dict):
     return False, "started but returned no tools"
 
 
-def verify(servers: dict, kb_expected: bool) -> bool:
+def verify(servers: dict, kb_expected: bool, include_desktop: bool) -> bool:
     """Self-check with a plain PASS/FAIL. Returns True if everything passed."""
     print("\n== Verifying ==")
     ok = True
@@ -256,6 +300,19 @@ def verify(servers: dict, kb_expected: bool) -> bool:
     print(("  PASS  vault server: launches and serves tools (%s)." % detail) if good
           else ("  FAIL  vault server: %s" % detail))
     ok = ok and good
+
+    if include_desktop:
+        desktop = desktop_config_path()
+        registered = set((_load(desktop) if desktop else {}).get("mcpServers", {}))
+        expected = set(servers)
+        if desktop is None:
+            print("  SKIP  desktop config: no known location on this OS.")
+        elif expected <= registered:
+            print("  PASS  desktop config: %s registered for the Claude desktop app." % ", ".join(sorted(expected)))
+        else:
+            print("  FAIL  desktop config: %s missing from %s. Run this script again."
+                  % (", ".join(sorted(expected - registered)), desktop))
+            ok = False
 
     if not kb_expected:
         print("  SKIP  kb server: set up without the knowledge base (--no-kb).")
@@ -282,14 +339,20 @@ def main() -> int:
     print("Vault:  %s" % VAULT)
     print("Python: %s (%s)" % (sys.executable, platform.platform()))
 
+    if not check_environment():
+        return 1
     kb_ok = False if args.no_kb else setup_kb()
     servers = build_servers(kb_ok)
     register(servers, include_desktop=not args.no_desktop)
     wire_hook()
-    ok = verify(servers, kb_expected=not args.no_kb)
+    ok = verify(servers, kb_expected=not args.no_kb, include_desktop=not args.no_desktop)
 
-    print("\nDone. Restart Claude Code and (if you use it) Claude Desktop.")
-    print("You can delete this file; nothing at runtime needs it. Run it again anytime to reconfigure or update.")
+    if ok:
+        print("\nNext steps:")
+        print("  1. Fully quit Claude (not just the window) and start it again.")
+        print("  2. Open THIS folder in Claude:  %s" % VAULT)
+        print("  3. Type:  read your instructions")
+        print("\nYou can delete this file; nothing at runtime needs it. Run it again anytime to reconfigure or update.")
     return 0 if ok else 1
 
 
