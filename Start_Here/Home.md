@@ -1,25 +1,20 @@
 # Welcome
 
-This is your starting point. You're looking at it inside **Obsidian**, a free app that turns a folder of plain text files into a connected, searchable workspace. Your AI assistant reads and writes those same files, so you and the AI share one workspace.
+You just got an AI second brain: a folder of plain notes that you and an AI work in together. You read and write in **Obsidian** (a free notes app); the AI reads and writes the same files. In about fifteen minutes it will be running.
 
-You don't need to be technical to use any of this. Read these six short pages in order and you'll be set up in about fifteen minutes.
+You don't need to be technical for any of this.
 
 ## The tour
 
-1. [[1 - What This Is]]: what Obsidian is, and why your notes are just files you own
-2. [[2 - Obsidian Features]]: the handful of features you'll actually use
-3. [[3 - Keyboard Shortcuts]]: the shortcuts already set up for you
-4. [[4 - Folders and Backlinks]]: how this workspace is organized, and how links between notes work
-5. [[5 - Connect Claude]]: point your AI at this folder so it can help
-6. [[6 - Next Steps]]: fill in your details and run your first session
+1. [[1 - What This Is]]: what you actually got, in plain words
+2. [[2 - Set Up Your AI]]: one command, then connect Claude
+3. [[3 - Your First Session]]: what to type, with prompts to copy
+4. [[4 - How the Vault Is Organized]]: the folders, and how notes link together
+5. [[5 - Obsidian Basics and Shortcuts]]: reference for later, skim or skip
+6. [[6 - Going Further]]: the habits that make this get better over time
 
-Start with [[1 - What This Is]].
-
-## If you want the official sources
-
-- Obsidian help home: https://help.obsidian.md
-- Download Obsidian: https://obsidian.md
+**In a hurry?** Jump straight to [[2 - Set Up Your AI]] and start the installer. The first run downloads about 1 GB, so kick it off now and read [[1 - What This Is]] while it works.
 
 ---
 
-_New here? Open [[1 - What This Is]] and read straight through._
+_Start with [[1 - What This Is]], or go set up first._
