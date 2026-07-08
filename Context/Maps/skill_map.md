@@ -35,6 +35,16 @@ Claude Code and Claudian pick these up natively; they need git or scripts, so De
 
 ---
 
+## Archived
+
+_Superseded skills, kept for history. Tagged `#archived`; not part of the active roster._
+
+| Skill | Path | Superseded | Replaced by |
+|---|---|---|---|
+| mcp-sync | [[Context/Skills/Archive/mcp-sync/SKILL.md]] | 2026-07-07 | `AI-Workshop/install.py` (re-run to reconfigure or update) |
+
+---
+
 ## System Rules
 
 All skills inherit from [[systems_map]] at `Context/Maps/systems_map.md`.

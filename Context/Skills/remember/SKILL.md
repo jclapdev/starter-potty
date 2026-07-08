@@ -25,9 +25,11 @@ Save how the user wants you to work, so it carries into future sessions instead 
 4. Tell the user it's saved, in one line.
 
 ## Done when
+
 - The new file exists in `Context/Memory/`.
 - `MEMORY.md` has a line linking to it.
 
 ## Keep it clean
+
 - One preference per file.
 - Short and specific. Say the behavior plainly, not in a long write-up.
