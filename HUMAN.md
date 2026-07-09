@@ -160,12 +160,13 @@ Hand someone the Starter (a zip, or the repo link). They install Python, Obsidia
 
 ## Updating to a new version
 
-Install and update are the same command: get the newer files, then run the installer again. It never starts over and never touches your work.
+One command on any machine:
 
-- **On a git-based vault:** `git pull`, then `python AI-Workshop/install.py`.
-- **Otherwise:** download the latest Starter and replace only the system folders (`Context/Skills`, `Context/Systems`, `Context/Agents`, the maps in `Context/Maps`, and `AI-Workshop/`) with the new versions, then run `python AI-Workshop/install.py`. Leave `Context/History`, `Context/Memory`, `main.md`, and your own notes alone; they are yours and are never part of the shared system.
+```
+python AI-Workshop/install.py --update
+```
 
-Re-running the installer only rewrites machine config and refreshes the system files. Restart Claude when it finishes.
+It gets the latest system files itself (git pull on a git-based vault, a download of the published Starter otherwise), applies them, and re-runs the install. It never starts over and never touches your work: `Context/History`, `Context/Memory`, `main.md`, your notes, and your knowledge-base sources stay exactly as they are, and every system file it replaces is saved first in `AI-Workshop/.update-backups/`. If a machine's system files are ever missing or broken, a plain `python AI-Workshop/install.py` repairs them the same way. Restart Claude when it finishes.
 
 ---
 

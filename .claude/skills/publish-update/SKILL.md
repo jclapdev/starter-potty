@@ -33,4 +33,4 @@ Use this after we change the system (skills, systems, agents, maps, or the helpe
 - The main vault is pushed.
 
 ## Note
-Each machine then gets the update by pulling the new files and running `python AI-Workshop/install.py` (git pull, or replace the system folders by hand). The full machine-side steps are in `Workshop-Human/UPDATING-MACHINES.md`.
+Each machine then gets the update with one command: `python AI-Workshop/install.py --update` (it git-pulls on a git clone, downloads the published Starter otherwise). The full machine-side steps, including the one-time step for machines whose installer predates `--update`, are in `Workshop-Human/UPDATING-MACHINES.md`.

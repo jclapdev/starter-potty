@@ -288,6 +288,7 @@ def self_update(passthrough: list) -> int:
             else:
                 print("  system files were already the latest.")
     env = {**os.environ, "AIW_UPDATED": "1"}
+    sys.stdout.flush()
     return subprocess.call([sys.executable, str(AIW / "install.py")] + passthrough, env=env)
 
 

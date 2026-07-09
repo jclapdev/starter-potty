@@ -27,7 +27,7 @@ What happens:
 3. It writes the config each Claude app needs, using your own machine's paths.
 4. It ends with a **PASS/FAIL check of every part**, then prints your next steps.
 
-If everything passed, you're done with the terminal. You can delete `install.py` afterward; run it again anytime to reconfigure or update. If something failed, the message tells you the fix; re-run after fixing.
+If everything passed, you're done with the terminal. Keep `install.py`; it is also how this machine updates later (`python AI-Workshop/install.py --update` fetches and applies the latest version by itself). If something failed, the message names the exact command that fixes it.
 
 ## Step 2, Option A: Claude desktop app (easiest)
 
