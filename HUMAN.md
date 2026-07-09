@@ -54,7 +54,7 @@ python AI-Workshop/install.py
 
 That is the entire setup. It works on macOS, Windows, and Linux because it uses the exact Python you ran it with, figures out your own paths, and writes the config each Claude app needs. It also sets up the knowledge base, which the first time downloads about 1 GB of libraries, so give it a few minutes. When it finishes it prints a plain PASS/FAIL for each part (rules, the vault server, the knowledge base) so you can see it is wired up.
 
-Restart Claude afterward and the system is live. You can delete `install.py` when it is done; nothing at runtime needs it. Run it again any time to update or repair: it checks first, changes only what needs changing, and cleans up leftovers from older versions. On a machine that is already set up right, a re-run changes nothing and says so. To only inspect a machine without changing anything, run `python AI-Workshop/install.py --check`; it prints PASS/FAIL for each part.
+Restart Claude afterward and the system is live. You can delete `install.py` when it is done; nothing at runtime needs it. Run it again any time to update or repair. It checks first and changes only what needs changing, and it cleans up leftovers from older versions on its own. On a machine that is already set up right, a re-run changes nothing and says so. To only inspect a machine without changing anything, run `python AI-Workshop/install.py --check`; it prints PASS/FAIL for each part.
 
 Want to skip the 1 GB knowledge-base download? Run `python AI-Workshop/install.py --no-kb`.
 
