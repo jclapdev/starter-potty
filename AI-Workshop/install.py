@@ -13,9 +13,19 @@ that already works, a re-run changes nothing and says so.
 only inspects and prints PASS/FAIL; it never changes anything. Use it to answer
 "is this machine set up right?" without touching the machine.
 
+    python AI-Workshop/install.py --update
+
+gets the latest system files first (git pull on a git clone, a download of the
+public Starter otherwise), then installs. It only ever adds or refreshes the
+system's own files — notes, memory, kb sources, and anything the user added
+are never touched, and every replaced file is saved in
+AI-Workshop/.update-backups/ first.
+
 What it does, all in this one file:
-  - Checks this vault has the current system files before touching anything,
-    and stops with plain update steps if they are missing or out of date.
+  - Checks this vault has the current system files before touching anything.
+    If they are missing or from an older version, it fetches the latest ones
+    itself (same as --update) and continues; only offline machines are given
+    hand-copy steps.
   - Cleans up folders left over from older versions (kb-mcp, vault-mcp,
     installers), keeping any knowledge-base source files found there.
   - Registers the system's servers (vault, kb) in the two files the apps read:
@@ -64,6 +74,24 @@ REQUIRED_FILES = (
     KB_DIR / "requirements.txt",
     HOOK,
 )
+
+# Where --update gets the latest system files (the public Starter repo).
+# The env override exists so tests can point at a local zip (file:// works).
+STARTER_ZIP_URL = os.environ.get(
+    "AIW_STARTER_ZIP_URL",
+    "https://github.com/jclapdev/starter-potty/archive/refs/heads/main.zip")
+
+# --update overlays these shipped roots onto the vault: add/overwrite shipped
+# files, never delete anything the user added.
+UPDATE_ROOTS = ("CLAUDE.md", "AI-Workshop", "Context/Skills", "Context/Systems",
+                "Context/Agents", "Context/Maps", ".claude/skills")
+# Machine-owned content inside those roots: never overwritten.
+UPDATE_PRESERVE = ("AI-Workshop/mcp-servers/kb/sources",
+                   "AI-Workshop/mcp-servers/kb/data",
+                   "AI-Workshop/.update-backups")
+# Shipped as templates, personalized on each machine: copy only if missing.
+UPDATE_CREATE_ONLY = ("Context/Maps/vault_map.md", "Context/Maps/content_index.md")
+BACKUP_DIR = AIW / ".update-backups"
 
 
 def venv_python(venv_dir: Path) -> Path:
@@ -124,16 +152,6 @@ def preflight(fix: bool) -> tuple[bool, bool]:
         print("  FAIL  this vault's system files are incomplete or from an older version:")
         for p in missing:
             print("          missing  %s" % p.relative_to(VAULT))
-        print("\n      Nothing was changed. Get the current files first, then run this again:")
-        if (VAULT / ".git").exists():
-            print("        1. In this folder run:  git pull")
-            print("        2. Run this script again.")
-        else:
-            print("        1. Download the latest Starter.")
-            print("        2. In this vault, replace these folders with the new ones:")
-            print("           Context/Skills, Context/Systems, Context/Agents, Context/Maps, AI-Workshop")
-            print("           (leave Context/History, Context/Memory, main.md, and your notes alone)")
-            print("        3. Run this script again.")
         return False, False
 
     legacy = [AIW / d for d in LEGACY_DIRS if (AIW / d).exists()]
@@ -160,6 +178,117 @@ def preflight(fix: bool) -> tuple[bool, bool]:
         shutil.rmtree(d, ignore_errors=True)
         print("  removed old-version folder: %s" % d.relative_to(VAULT))
     return True, True
+
+
+# --------------------------------------------------------------------------- #
+# Self-update (--update, and auto-repair when system files are missing)
+# --------------------------------------------------------------------------- #
+def _manual_update_steps() -> None:
+    """The hand-copy fallback, for machines that are offline or whose download
+    came back broken."""
+    print("      Get the current files by hand, then run this again:")
+    print("        1. Download the latest Starter.")
+    print("        2. In this vault, replace these folders with the new ones:")
+    print("           Context/Skills, Context/Systems, Context/Agents, Context/Maps, AI-Workshop")
+    print("           (leave Context/History, Context/Memory, main.md, and your notes alone)")
+    print("        3. Run this script again.")
+
+
+def _download_starter(tmp: Path):
+    """Download and unzip the latest Starter into tmp. Returns the folder that
+    holds the Starter's files (the one containing AI-Workshop/install.py), or
+    None if the download failed."""
+    import urllib.request
+    import zipfile
+    zip_path = tmp / "starter.zip"
+    print("  downloading %s" % STARTER_ZIP_URL)
+    try:
+        with urllib.request.urlopen(STARTER_ZIP_URL, timeout=60) as resp, \
+                open(zip_path, "wb") as f:
+            shutil.copyfileobj(resp, f)
+        with zipfile.ZipFile(zip_path) as z:
+            z.extractall(tmp / "starter")
+    except Exception as exc:  # noqa: BLE001
+        print("  FAIL  could not download the Starter (%s)." % exc)
+        print("\n      If this machine is offline, that is why.")
+        _manual_update_steps()
+        return None
+    # The zip's root folder name varies (starter-potty-main/, Starter/, none).
+    for p in sorted((tmp / "starter").rglob("install.py")):
+        if p.parent.name == "AI-Workshop":
+            return p.parents[1]
+    print("  FAIL  the downloaded Starter has no AI-Workshop/install.py in it.")
+    _manual_update_steps()
+    return None
+
+
+def _overlay_starter(src_root: Path) -> tuple[int, Path | None]:
+    """Copy the shipped system files from an unzipped Starter onto this vault.
+    Adds and overwrites shipped files only — never deletes anything, never
+    touches machine-owned content (kb sources/data, venvs, backups, templates
+    the machine has personalized). Files about to change are saved first.
+    Returns (files_written, backup_dir_or_None)."""
+    from datetime import datetime
+    stamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+    backup_root = BACKUP_DIR / stamp
+    written, backed_up = 0, False
+    preserve = tuple(r + "/" for r in UPDATE_PRESERVE)
+    for root in UPDATE_ROOTS:
+        src_base = src_root / root
+        if not src_base.exists():
+            continue
+        sources = [src_base] if src_base.is_file() else sorted(src_base.rglob("*"))
+        for src in sources:
+            if not src.is_file():
+                continue
+            rel = str(src.relative_to(src_root)).replace(os.sep, "/")
+            if rel in UPDATE_PRESERVE or rel.startswith(preserve):
+                continue
+            if any(part in (".venv", "venv", "__pycache__") for part in rel.split("/")):
+                continue
+            dest = VAULT / rel
+            if rel in UPDATE_CREATE_ONLY and dest.exists():
+                continue
+            new_bytes = src.read_bytes()
+            if dest.exists():
+                old_bytes = dest.read_bytes()
+                if old_bytes == new_bytes:
+                    continue
+                bak = backup_root / rel
+                bak.parent.mkdir(parents=True, exist_ok=True)
+                bak.write_bytes(old_bytes)
+                backed_up = True
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_bytes(new_bytes)
+            written += 1
+    return written, (backup_root if backed_up else None)
+
+
+def self_update(passthrough: list) -> int:
+    """Get the latest system files (git pull on a git clone, Starter download
+    otherwise), then run the FRESH installer so its logic does the install."""
+    print("\n== Updating this vault's system files ==")
+    if (VAULT / ".git").exists():
+        print("  this vault is a git clone; running git pull.")
+        r = subprocess.run(["git", "-C", str(VAULT), "pull"])
+        if r.returncode != 0:
+            print("  FAIL  git pull did not finish (see the git message above).")
+            print("        Resolve it, then run:  python AI-Workshop/install.py")
+            return 1
+    else:
+        with tempfile.TemporaryDirectory(prefix="starter-update-") as tmp:
+            src_root = _download_starter(Path(tmp))
+            if src_root is None:
+                return 1
+            written, backup = _overlay_starter(src_root)
+            if written:
+                print("  updated %d system file%s." % (written, "" if written == 1 else "s"))
+                if backup:
+                    print("  previous versions saved in %s" % backup.relative_to(VAULT))
+            else:
+                print("  system files were already the latest.")
+    env = {**os.environ, "AIW_UPDATED": "1"}
+    return subprocess.call([sys.executable, str(AIW / "install.py")] + passthrough, env=env)
 
 
 def desktop_config_path():
@@ -383,6 +512,9 @@ def _resolve_import_chain(entry: Path):
 def _probe_server(spec: dict, timeout: int = 20, extra_env: dict | None = None):
     """Launch a server exactly as an app would and confirm it lists tools."""
     cmd = [spec.get("command", "")] + list(spec.get("args", []))
+    for a in cmd[1:]:
+        if str(a).endswith(".py") and not Path(a).exists():
+            return False, "server file missing: %s" % a
     env = {**os.environ, **spec.get("env", {}), **(extra_env or {})}
     msgs = (json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize",
                         "params": {"protocolVersion": "2024-11-05"}}) + "\n" +
@@ -404,7 +536,26 @@ def _probe_server(spec: dict, timeout: int = 20, extra_env: dict | None = None):
             continue
         if isinstance(tools, list) and tools:
             return True, "%d tools" % len(tools)
+    # No tools in stdout. A crash message beats the generic diagnosis: the last
+    # stderr line is where Python puts the actual error.
+    err_lines = [l for l in err.splitlines() if l.strip()]
+    if proc.returncode != 0 or err_lines:
+        return False, "crashed on start: %s" % (err_lines[-1] if err_lines
+                                                else "exit code %d" % proc.returncode)
     return False, "started but returned no tools"
+
+
+def _fail(msg: str, update: bool = False) -> None:
+    """A FAIL line that always names the command that fixes it, so anyone
+    reading the output on any machine knows what to run next."""
+    print("  FAIL  %s" % msg)
+    print("        Fix: python AI-Workshop/install.py%s" % (" --update" if update else ""))
+
+
+def _probe_fix(detail: str) -> bool:
+    """Missing or crashing server files mean the system files themselves are
+    bad — that needs --update, not just a re-run."""
+    return detail.startswith(("server file missing", "crashed on start"))
 
 
 def verify(servers: dict, kb_expected: bool, include_desktop: bool) -> bool:
@@ -414,7 +565,7 @@ def verify(servers: dict, kb_expected: bool, include_desktop: bool) -> bool:
 
     entry = VAULT / "CLAUDE.md"
     if not entry.exists():
-        print("  FAIL  rules: CLAUDE.md not found (%s). Is this the vault root?" % VAULT)
+        _fail("rules: CLAUDE.md not found (%s). Is this the vault root?" % VAULT, update=True)
         ok = False
     else:
         _, missing = _resolve_import_chain(entry)
@@ -422,17 +573,20 @@ def verify(servers: dict, kb_expected: bool, include_desktop: bool) -> bool:
             print("  FAIL  rules: CLAUDE.md loads but these @imports are missing:")
             for t in missing:
                 print("          - %s" % t)
+            print("        Fix: python AI-Workshop/install.py --update")
             ok = False
         else:
             print("  PASS  rules: CLAUDE.md and its full @import chain resolve.")
 
     if "vault" not in servers:
-        print("  FAIL  vault server: not registered. Run this script without --check to fix it.")
+        _fail("vault server: not registered.")
         ok = False
     else:
         good, detail = _probe_server(servers["vault"])
-        print(("  PASS  vault server: launches and serves tools (%s)." % detail) if good
-              else ("  FAIL  vault server: %s" % detail))
+        if good:
+            print("  PASS  vault server: launches and serves tools (%s)." % detail)
+        else:
+            _fail("vault server: %s" % detail, update=_probe_fix(detail))
         ok = ok and good
 
     if include_desktop:
@@ -444,14 +598,14 @@ def verify(servers: dict, kb_expected: bool, include_desktop: bool) -> bool:
         elif expected <= registered:
             print("  PASS  desktop config: %s registered for the Claude desktop app." % ", ".join(sorted(expected)))
         else:
-            print("  FAIL  desktop config: %s missing from %s. Run this script again."
+            _fail("desktop config: %s missing from %s."
                   % (", ".join(sorted(expected - registered)), desktop))
             ok = False
 
     if not kb_expected:
         print("  SKIP  kb server: set up without the knowledge base (--no-kb).")
     elif "kb" not in servers:
-        print("  FAIL  kb server: not registered (its libraries didn't install). Re-run to retry.")
+        _fail("kb server: not registered (its libraries didn't install).")
         ok = False
     else:
         # Probe with the startup ingest scan pointed at an empty folder so the
@@ -459,20 +613,21 @@ def verify(servers: dict, kb_expected: bool, include_desktop: bool) -> bool:
         empty = tempfile.mkdtemp(prefix="kb-probe-")
         good, detail = _probe_server(servers["kb"], timeout=120,
                                      extra_env={"KB_INGEST_PATHS": "", "KB_RESOURCES_PATH": empty})
-        print(("  PASS  kb server: launches and serves tools (%s)." % detail) if good
-              else ("  FAIL  kb server: %s" % detail))
+        if good:
+            print("  PASS  kb server: launches and serves tools (%s)." % detail)
+        else:
+            _fail("kb server: %s" % detail, update=_probe_fix(detail))
         ok = ok and good
 
     # Entries that point at system files which no longer exist cannot work.
     for label, path in config_targets(include_desktop):
         for name, spec in _load(path).get("mcpServers", {}).items():
             if isinstance(spec, dict) and _points_at_missing(spec):
-                print("  FAIL  %s entry in %s points at files that don't exist."
-                      " Run this script without --check to clean it up." % (name, label))
+                _fail("%s entry in %s points at files that don't exist." % (name, label))
                 ok = False
 
     print("\n  All checks passed. Restart Claude and the system is live." if ok
-          else "\n  One or more checks FAILED. Fix the items above, then run again.")
+          else "\n  One or more checks FAILED. Run the Fix command shown above.")
     return ok
 
 
@@ -481,16 +636,31 @@ def main() -> int:
     ap.add_argument("--no-kb", action="store_true", help="Skip the knowledge base (skip the ~1 GB install).")
     ap.add_argument("--no-desktop", action="store_true", help="Register for Claude Code only, not Claude Desktop.")
     ap.add_argument("--check", action="store_true", help="Only inspect and print PASS/FAIL; change nothing.")
+    ap.add_argument("--update", action="store_true",
+                    help="Get the latest system files (git pull or Starter download), then install.")
     args = ap.parse_args()
+    passthrough = [a for a in sys.argv[1:] if a != "--update"]
 
     print("Vault:  %s" % VAULT)
     print("Python: %s (%s)" % (sys.executable, platform.platform()))
 
     if not check_environment():
         return 1
+    if args.update:
+        return self_update(passthrough)
     ok, changed = preflight(fix=not args.check)
     if not ok:
-        return 1
+        if args.check:
+            print("\n        Fix: python AI-Workshop/install.py")
+            return 1
+        if os.environ.get("AIW_UPDATED"):
+            # We already fetched the latest Starter and it is still incomplete:
+            # the published Starter itself is broken. Do not loop.
+            print("\n      The freshly downloaded system files are also incomplete.")
+            _manual_update_steps()
+            return 1
+        print("\n      Fetching the latest system files to repair this vault.")
+        return self_update(passthrough)
 
     if args.check:
         registered = _load(CODE_MCP).get("mcpServers", {})
