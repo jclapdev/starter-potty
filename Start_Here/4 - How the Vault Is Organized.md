@@ -15,9 +15,7 @@ The folders each have a job:
 | `Context/` | The AI's brain: its skills, memory, history, and the maps that tie them together |
 | `Workshop-Human/` | Your inbox. Jot messy ideas here and point the AI at them |
 | `Projects/` | A note per project you're working on |
-| `Input/` | Drop files here for the AI to process |
 | `Resources/` | Reference material you want to keep |
-| `Attachments/` | Images and files embedded inside your notes |
 | `AI-Workshop/` | The AI's own working area: its tools, outputs, and scheduled jobs |
 
 **You don't have to memorize this.** Every folder contains a file named `HUMAN.md` that explains what the folder is for. Open any folder, read its `HUMAN.md`, and you'll know what belongs in it.

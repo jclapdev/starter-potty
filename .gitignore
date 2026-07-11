@@ -10,6 +10,7 @@ node_modules/
 .mcp.json
 *.bak
 AI-Workshop/mcp-servers/kb/data/
+AI-Workshop/mcp-servers/vault/data/
 /.claude/settings.local.json
 /.claude/worktrees/
 

@@ -24,4 +24,4 @@
 | `vault_health(fix?)` | One-call maintenance report: broken links, orphans, map verification, lint, archive candidates. `fix=true` also applies the deterministic safe fixes (writes) |
 | `wrap_session(...)` | Session close: writes the handoff note verbatim, applies structured open-work.md changes, moves history notes to Archive/ (writes) |
 
-**Index:** mtime-cached — only changed files are reparsed on each call. Honors `Context/.vaultignore`.
+**Index:** two modes, switched automatically. Small vaults (under 5,000 notes) use the in-memory mtime cache, reparsing only changed files per call. Larger vaults switch to a persistent SQLite FTS5 index in `data/` (gitignored, one file per vault path): note bodies stay on disk, searches answer from the index in milliseconds, and each call pays only an mtime diff of changed files. Override with `VAULT_INDEX=memory|sqlite`; `VAULT_INDEX_DB` relocates the database. Both modes honor `Context/.vaultignore`. Measured at 100k synthetic notes: in-memory took 14 s per search at 7 GB RAM; FTS5 answers the same search in under 10 ms at flat RAM.

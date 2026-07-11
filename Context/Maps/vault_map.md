@@ -19,9 +19,7 @@ YourVault/
 │
 ├── Workshop-Human/       # Human-managed scratch space (brain-dump intake) — excluded from scans
 │
-├── Attachments/          # File attachments (currently empty)
-├── Input/                # Drop files here for the AI to process
-├── Start_Here/           # Onboarding — read these first to get set up
+├── Start_Here/           # Onboarding, read these first to get set up
 │
 ├── Context/
 │   ├── Agents/           # Sub-agent prompt files (one folder per agent) — see [[agent_map]]

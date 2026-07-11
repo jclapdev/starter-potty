@@ -44,11 +44,14 @@ this file (AI-Workshop/mcp-servers/vault/server.py -> vault root).
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import os
 import re
+import sqlite3
 import sys
+import time
 from collections import Counter, deque
 from fnmatch import fnmatch
 from pathlib import Path
@@ -334,6 +337,317 @@ def _adjacency(index):
 
 
 # --------------------------------------------------------------------------- #
+# Persistent SQLite FTS5 index — the large-vault path.
+#
+# The in-memory index above holds every note body in RAM and re-tokenizes the
+# whole corpus per search, which is fine to a few thousand notes and hopeless
+# past that (measured: 14 s/search and 7 GB RSS at 100k notes). Above
+# _SQLITE_THRESHOLD notes (or with VAULT_INDEX=sqlite) the search/link/status
+# tools run off a persistent SQLite database instead: bodies live on disk,
+# FTS5 answers searches in milliseconds, and each call pays only an mtime
+# diff of changed files. Small vaults never touch SQLite (VAULT_INDEX=memory
+# forces the old path), so behavior for existing users is unchanged.
+#
+# The database lives under this server's data/ folder (gitignored, never
+# ships), one file per vault path so benchmark/test vaults don't collide.
+# --------------------------------------------------------------------------- #
+_SQLITE_THRESHOLD = int(os.environ.get("VAULT_INDEX_THRESHOLD", "5000"))
+_DB_SYNC_TTL = 30.0  # seconds between filesystem re-syncs
+_DB = None
+_DB_LAST_SYNC = 0.0
+_COUNT_CACHE = None  # (checked_at, note_count)
+
+
+def _db_file():
+    override = os.environ.get("VAULT_INDEX_DB")
+    if override:
+        return Path(override)
+    tag = hashlib.sha1(str(VAULT).encode()).hexdigest()[:10]
+    return Path(__file__).resolve().parent / "data" / ("index-%s.db" % tag)
+
+
+def _use_sqlite():
+    mode = os.environ.get("VAULT_INDEX", "").lower()
+    if mode == "memory":
+        return False
+    if mode == "sqlite":
+        return True
+    if _db_file().exists():
+        return True
+    global _COUNT_CACHE
+    now = time.time()
+    if _COUNT_CACHE and now - _COUNT_CACHE[0] < 300:
+        return _COUNT_CACHE[1] >= _SQLITE_THRESHOLD
+    n = 0
+    for _abs, rel in _iter_files(_load_ignore()):
+        if rel.endswith(".md"):
+            n += 1
+            if n >= _SQLITE_THRESHOLD:
+                break
+    _COUNT_CACHE = (now, n)
+    return n >= _SQLITE_THRESHOLD
+
+
+def _db():
+    """Open (creating if needed) and freshness-sync the persistent index."""
+    global _DB
+    if _DB is None:
+        path = _db_file()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        _DB = sqlite3.connect(str(path))
+        _DB.executescript("""
+            PRAGMA journal_mode=WAL;
+            CREATE TABLE IF NOT EXISTS files(
+                rel TEXT PRIMARY KEY, mtime REAL, title TEXT, status TEXT,
+                fts_rowid INTEGER);
+            CREATE VIRTUAL TABLE IF NOT EXISTS notes USING fts5(
+                rel UNINDEXED, title, body, tokenize='porter unicode61');
+            CREATE TABLE IF NOT EXISTS keys(key TEXT, rel TEXT);
+            CREATE TABLE IF NOT EXISTS links(src TEXT, raw TEXT, base TEXT, full TEXT);
+            CREATE TABLE IF NOT EXISTS allfiles(key TEXT PRIMARY KEY);
+            CREATE INDEX IF NOT EXISTS idx_keys ON keys(key);
+            CREATE INDEX IF NOT EXISTS idx_keys_rel ON keys(rel);
+            CREATE INDEX IF NOT EXISTS idx_links_src ON links(src);
+            CREATE INDEX IF NOT EXISTS idx_links_base ON links(base);
+            CREATE INDEX IF NOT EXISTS idx_links_full ON links(full);
+        """)
+        # Databases created before fts_rowid existed get the column added;
+        # their old rows carry NULL and fall back to the slow rel delete once.
+        cols = [r[1] for r in _DB.execute("PRAGMA table_info(files)")]
+        if "fts_rowid" not in cols:
+            _DB.execute("ALTER TABLE files ADD COLUMN fts_rowid INTEGER")
+    _sync_db(_DB)
+    return _DB
+
+
+def _note_keys(rel):
+    """Lookup keys for a note rel path — mirrors the in-memory by_key rules."""
+    without_ext = rel[:-3].lower()
+    fname = without_ext.split("/")[-1]
+    keys = {without_ext}
+    if fname in ("agent", "skill", "index", "readme") and "/" in without_ext:
+        keys.add(without_ext.split("/")[-2])
+    else:
+        keys.add(fname)
+    return keys
+
+
+def _index_one(con, abs_path, rel, mtime, is_new=False):
+    try:
+        md = Path(abs_path).read_text(encoding="utf-8")
+    except OSError:
+        return
+    fm, body = _parse_frontmatter(md)
+    title_m = _H1.search(md)
+    title = title_m.group(1).strip() if title_m else rel.rsplit("/", 1)[-1][:-3]
+    if not is_new:
+        # The FTS table can't index rel, so deletes go by rowid (saved in
+        # files.fts_rowid at insert time). A rel-based FTS delete would scan
+        # the whole table per changed file.
+        row = con.execute("SELECT fts_rowid FROM files WHERE rel=?", (rel,)).fetchone()
+        if row and row[0] is not None:
+            con.execute("DELETE FROM notes WHERE rowid=?", (row[0],))
+        else:
+            con.execute("DELETE FROM notes WHERE rel=?", (rel,))
+        con.execute("DELETE FROM keys WHERE rel=?", (rel,))
+        con.execute("DELETE FROM links WHERE src=?", (rel,))
+    cur = con.execute("INSERT INTO notes VALUES (?,?,?)", (rel, title, body))
+    con.execute("INSERT OR REPLACE INTO files VALUES (?,?,?,?,?)",
+                (rel, mtime, title, fm.get("status", "").lower() or None,
+                 cur.lastrowid))
+    con.executemany("INSERT INTO keys VALUES (?,?)",
+                    [(k, rel) for k in _note_keys(rel)])
+    rows = []
+    for raw in _LINK.findall(_strip_code(md)):
+        base, full = _norm_key(raw)
+        if base:
+            rows.append((rel, raw.split("|")[0].split("#")[0].strip(), base, full))
+    if rows:
+        con.executemany("INSERT INTO links VALUES (?,?,?,?)", rows)
+
+
+def _sync_db(con, force=False):
+    global _DB_LAST_SYNC
+    if not force and time.time() - _DB_LAST_SYNC < _DB_SYNC_TTL:
+        return
+    patterns = _load_ignore()
+    on_disk = {}      # rel -> (abs, mtime), md notes only
+    file_keys = set()
+    for abs_path, rel in _iter_files(patterns):
+        low = rel.lower()
+        file_keys.add(low)
+        file_keys.add(low.split("/")[-1])
+        if rel.endswith(".md"):
+            try:
+                on_disk[rel] = (abs_path, os.path.getmtime(abs_path))
+            except OSError:
+                continue
+    for p in VAULT.glob(".claude/skills/*/SKILL.md"):
+        file_keys.add(p.parent.name.lower())
+    wh = VAULT / "Workshop-Human"
+    if wh.exists():
+        for p in wh.rglob("*.md"):
+            file_keys.add(p.name.lower())
+            file_keys.add(p.stem.lower())
+
+    known, rowids = {}, {}
+    for rel, mtime, fts_rowid in con.execute("SELECT rel, mtime, fts_rowid FROM files"):
+        known[rel] = mtime
+        rowids[rel] = fts_rowid
+    for rel in known.keys() - on_disk.keys():
+        con.execute("DELETE FROM files WHERE rel=?", (rel,))
+        if rowids.get(rel) is not None:
+            con.execute("DELETE FROM notes WHERE rowid=?", (rowids[rel],))
+        else:
+            con.execute("DELETE FROM notes WHERE rel=?", (rel,))
+        con.execute("DELETE FROM keys WHERE rel=?", (rel,))
+        con.execute("DELETE FROM links WHERE src=?", (rel,))
+    for rel, (abs_path, mtime) in on_disk.items():
+        if known.get(rel) != mtime:
+            _index_one(con, abs_path, rel, mtime, is_new=rel not in known)
+    con.execute("DELETE FROM allfiles")
+    con.executemany("INSERT OR IGNORE INTO allfiles VALUES (?)",
+                    [(k,) for k in file_keys])
+    con.commit()
+    _DB_LAST_SYNC = time.time()
+
+
+def _fts_match(query):
+    """Sanitize a free-text query into an OR-joined FTS5 MATCH expression."""
+    terms = _tok(query)
+    return " OR ".join('"%s"' % t for t in terms) if terms else None
+
+
+def _sql_resolve(con, name):
+    base, full = _norm_key(name)
+    if base is None:
+        return []
+    rows = con.execute("SELECT rel FROM keys WHERE key=?", (full,)).fetchall()
+    if not rows:
+        rows = con.execute("SELECT rel FROM keys WHERE key=?", (base,)).fetchall()
+    out = []
+    for (r,) in rows:
+        if r not in out:
+            out.append(r)
+    return out
+
+
+def _sql_search(query, limit, scope):
+    con = _db()
+    match = _fts_match(query)
+    if not match:
+        return {"query": query, "scope": scope, "matches": []}
+    sql = ("SELECT rel, title, bm25(notes, 10.0, 1.0),"
+           " snippet(notes, 2, '', '', '…', 30)"
+           " FROM notes WHERE notes MATCH ?")
+    args = [match]
+    if scope:
+        sql += " AND rel LIKE ?"
+        args.append(scope.strip("/") + "/%")
+    sql += " ORDER BY bm25(notes, 10.0, 1.0) LIMIT ?"
+    args.append(max(1, int(limit)))
+    matches = [{"path": rel, "title": title, "score": round(-score, 3),
+                "snippet": snip.replace("\n", " ").strip()[:220]}
+               for rel, title, score, snip in con.execute(sql, args)]
+    return {"query": query, "scope": scope, "matches": matches}
+
+
+def _sql_get_links(note, direction, depth):
+    con = _db()
+    starts = _sql_resolve(con, note)
+    if not starts:
+        return {"error": "No note matches %r. Try resolve_note first." % note, "matches": []}
+    start = starts[0]
+    depth = max(1, int(depth))
+    seen = {start: 0}
+    q = deque([(start, 0)])
+    while q:
+        cur, d = q.popleft()
+        if d >= depth:
+            continue
+        nbrs = set()
+        if direction in ("outbound", "both"):
+            for base, full in con.execute(
+                    "SELECT base, full FROM links WHERE src=?", (cur,)):
+                for tgt in (_sql_resolve(con, full) or _sql_resolve(con, base)):
+                    if tgt != cur:
+                        nbrs.add(tgt)
+        if direction in ("inbound", "both"):
+            for (src,) in con.execute(
+                    "SELECT DISTINCT src FROM links WHERE base IN"
+                    " (SELECT key FROM keys WHERE rel=?)"
+                    " OR full IN (SELECT key FROM keys WHERE rel=?)",
+                    (cur, cur)):
+                if src != cur:
+                    nbrs.add(src)
+        for nb in nbrs:
+            if nb not in seen:
+                seen[nb] = d + 1
+                q.append((nb, d + 1))
+    results = sorted(((d, r) for r, d in seen.items() if r != start),
+                     key=lambda x: (x[0], x[1]))
+    return {"note": start, "direction": direction, "depth": depth,
+            "ambiguous": starts[1:] if len(starts) > 1 else [],
+            "neighbours": [{"path": r, "distance": d} for d, r in results[:100]]}
+
+
+def _sql_broken_links():
+    con = _db()
+    # Candidates: links resolving to no note key. The remaining file_keys
+    # check (plain file targets like images) runs per candidate, which stays
+    # cheap because candidates are rare.
+    rows = con.execute("""
+        SELECT l.src, l.raw FROM links l
+        WHERE NOT EXISTS (SELECT 1 FROM keys k WHERE k.key = l.full)
+          AND NOT EXISTS (SELECT 1 FROM keys k WHERE k.key = l.base)
+        """).fetchall()
+    broken = []
+    for src, raw in rows:
+        tl = raw.lower()
+        hit = con.execute("SELECT 1 FROM allfiles WHERE key=? OR key=? LIMIT 1",
+                          (tl, tl.split("/")[-1])).fetchone()
+        if not hit:
+            broken.append({"source": src, "target": raw})
+    return {"count": len(broken), "broken_links": broken[:200]}
+
+
+def _sql_orphans():
+    con = _db()
+    rows = con.execute("""
+        SELECT f.rel, f.title FROM files f
+        WHERE NOT EXISTS (
+            SELECT 1 FROM links l JOIN keys k ON (l.base = k.key OR l.full = k.key)
+            WHERE k.rel = f.rel AND l.src != f.rel)
+        """).fetchall()
+    orphans, exempt = [], 0
+    for rel, title in rows:
+        base = rel[:-3].split("/")[-1].lower()
+        if base in _ORPHAN_EXEMPT_NAMES or any(
+                rel.startswith(d + "/") for d in _ORPHAN_EXEMPT_DIRS):
+            exempt += 1
+            continue
+        orphans.append({"path": rel, "title": title})
+    return {"count": len(orphans), "exempt": exempt,
+            "orphans": sorted(orphans, key=lambda o: o["path"])}
+
+
+def _sql_list_by_status(status):
+    con = _db()
+    if status is not None:
+        s = str(status).strip().lower()
+        if s not in STATUS_VOCAB:
+            return {"error": "Unknown status %r. Valid: %s" % (status, ", ".join(STATUS_VOCAB))}
+        hits = [{"path": rel, "title": title} for rel, title in con.execute(
+            "SELECT rel, title FROM files WHERE status=? ORDER BY rel", (s,))]
+        return {"status": s, "count": len(hits), "notes": hits}
+    grouped = {}
+    for rel, st in con.execute("SELECT rel, status FROM files WHERE status IS NOT NULL"):
+        grouped.setdefault(st, []).append(rel)
+    return {"vocabulary": STATUS_VOCAB,
+            "by_status": {k: sorted(v) for k, v in sorted(grouped.items())}}
+
+
+# --------------------------------------------------------------------------- #
 # Loaders for skill/agent/open-work (specific structure, kept lightweight)
 # --------------------------------------------------------------------------- #
 def _load_skills():
@@ -424,6 +738,8 @@ def _snippet(body, query, width=200):
 
 
 def search_notes_core(query, limit=5, scope=None):
+    if _use_sqlite():
+        return _sql_search(query, limit, scope)
     index = _build_index()
     notes = index["notes"]
     if scope:
@@ -497,6 +813,8 @@ def get_session_brief_core():
 
 
 def get_links_core(note, direction="both", depth=1):
+    if _use_sqlite():
+        return _sql_get_links(note, direction, depth)
     index = _build_index()
     starts = _resolve_to_rel(note, index)
     if not starts:
@@ -530,6 +848,8 @@ def get_links_core(note, direction="both", depth=1):
 
 
 def find_broken_links_core():
+    if _use_sqlite():
+        return _sql_broken_links()
     index = _build_index()
     note_keys = set(index["by_key"].keys())
     file_keys = index["file_keys"]
@@ -549,6 +869,8 @@ def find_broken_links_core():
 
 
 def find_orphans_core():
+    if _use_sqlite():
+        return _sql_orphans()
     index = _build_index()
     _out, inb = _adjacency(index)
     orphans, exempt = [], 0
@@ -565,8 +887,10 @@ def find_orphans_core():
 
 
 def resolve_note_core(name):
-    index = _build_index()
-    matches = _resolve_to_rel(name, index)
+    if _use_sqlite():
+        matches = _sql_resolve(_db(), name)
+    else:
+        matches = _resolve_to_rel(name, _build_index())
     return {"name": name, "matches": matches, "ambiguous": len(matches) > 1, "found": bool(matches)}
 
 
@@ -599,6 +923,8 @@ def vault_tree_core(path=".", depth=2):
 
 
 def list_by_status_core(status=None):
+    if _use_sqlite():
+        return _sql_list_by_status(status)
     index = _build_index()
     if status is not None:
         s = str(status).strip().lower()
@@ -1235,7 +1561,7 @@ def _tool_specs():
 # Minimal MCP stdio server (JSON-RPC 2.0 over newline-delimited stdin/stdout)
 # --------------------------------------------------------------------------- #
 PROTOCOL_VERSION = "2024-11-05"
-SERVER_INFO = {"name": "vault", "version": "2.1.0"}
+SERVER_INFO = {"name": "vault", "version": "2.2.0"}
 
 # --------------------------------------------------------------------------- #
 # Rule injection: give clients that don't load CLAUDE.md themselves (Claude

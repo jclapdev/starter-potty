@@ -15,7 +15,7 @@ Setup: `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt`.
 
 **Ingestion pipeline lives in `server.py`** (`_gather_files` / `_process_file`); `ingest.py` is a thin CLI wrapper that imports it. One source of truth.
 
-**Vault self-index:** on startup the server also indexes the vault's own `Context/` and `Reference/` folders (tagged `tool="vault"`), so `query_patterns(tool="vault", ...)` gives semantic recall over the system's history, decisions, and memory. First run does a one-time full index; idempotent thereafter.
+**Vault self-index: off by default** (since 2026-07-11). Vault content search is the vault server's job. Its persistent FTS5 index covers every note, so indexing `Context/` and `Reference/` here again doubled work without adding a capability. Set `KB_INGEST_PATHS` to specific folders to re-enable semantic recall over them; existing `tool="vault"` rows in `data/` remain queryable until deleted.
 
 **index+note (transpose):** `ingest_kb(..., write_note=True)` writes a clean Obsidian note per non-Markdown source into the wiki folder (`AI-Workshop/Projects/Wiki/`), not just an index row.
 

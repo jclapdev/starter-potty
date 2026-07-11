@@ -7,3 +7,6 @@
 
 # Human scratch space — excluded from linting
 Workshop-Human/
+
+# Persistent search index for large vaults — generated, never note content.
+AI-Workshop/mcp-servers/vault/data/

@@ -15,7 +15,7 @@ Use this after we change the system (skills, systems, agents, maps, or the helpe
    git commit -m "describe the change"
    ```
 
-2. Fact-check the user-facing docs against the tooling as it actually behaves right now. Read the `Start_Here/` pages and `HUMAN.md` (both the live copies and any starter-overlay copies) and compare every claim about setup with what the code really does, especially `AI-Workshop/install.py`. If a page says setup creates something, prints something, or asks for something, confirm the script actually does it. Fix any claim that has drifted before building. (This step exists because three shipped claims once drifted: a Desktop shortcut that was never created, a Reference/ folder that does not exist in the Starter, and the wrong main.md placeholder format.)
+2. Fact-check the user-facing docs against the tooling as it actually behaves right now. Read the `Start_Here/` pages, `HUMAN.md`, and `Workshop-Human/` (both the live copies and any starter-overlay copies), plus any other doc that describes the install or update path, and compare every claim about setup with what the code really does, especially `AI-Workshop/install.py`. If a page says setup creates something, prints something, or asks for something, confirm the script actually does it. Fix any claim that has drifted before building. (This step exists because shipped claims have drifted more than once: a Desktop shortcut that was never created, a Reference/ folder that does not exist in the Starter, the wrong main.md placeholder format, and 2026-07-09's hand-copy update steps that survived in `Workshop-Human/UPDATING-MACHINES.md` and this skill's own Note after the tooling changed.)
 
 3. Rebuild and publish the shareable Starter:
    ```

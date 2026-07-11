@@ -49,10 +49,12 @@ KB_MODEL_NAME = os.environ.get("KB_MODEL_NAME", "all-MiniLM-L6-v2")
 
 # Vault root (server lives at <vault>/AI-Workshop/mcp-servers/kb/server.py).
 KB_VAULT_DIR = Path(os.environ.get("KB_VAULT_PATH", str(_SERVER_DIR.parent.parent.parent)))
-# Vault folders indexed on startup (tagged tool="vault") for semantic recall
-# over the system's own history, decisions, and memory. Override with
-# KB_INGEST_PATHS (os.pathsep-separated) — set to empty to disable.
-_default_ingest = os.pathsep.join([str(KB_VAULT_DIR / "Context"), str(KB_VAULT_DIR / "Reference")])
+# Optional startup ingest of extra folders (tagged tool="vault"). Off by
+# default since 2026-07-11: vault content is the vault server's job (its FTS5
+# index searches everything), and double-indexing the same files here cost
+# embedding time without adding a capability. Set KB_INGEST_PATHS
+# (os.pathsep-separated) to re-enable for specific folders.
+_default_ingest = ""
 KB_INGEST_PATHS = [Path(p) for p in
                    os.environ.get("KB_INGEST_PATHS", _default_ingest).split(os.pathsep)
                    if p.strip()]
