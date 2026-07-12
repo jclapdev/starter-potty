@@ -98,7 +98,7 @@ It fetches the latest system files itself, applies them, and re-runs the setup c
 
 ## Sharing it
 
-This vault doubles as a kit you can give away. A build script (`AI-Workshop/public-version/build-starter.py`) produces the Starter: the same system with everything personal stripped out. The person you give it to installs Python, Obsidian, and Claude, unzips the folder into their home folder, and runs the same one installer command. It works the same on Mac, Windows, and Linux because nothing in the shared files assumes a particular machine.
+This vault doubles as a kit you can give away. A build script (`AI-Workshop/Starter/build-starter.py`) produces the Starter: the same system with everything personal stripped out. The person you give it to installs Python, Obsidian, and Claude, unzips the folder into their home folder, and runs the same one installer command. It works the same on Mac, Windows, and Linux because nothing in the shared files assumes a particular machine.
 
 ---
 

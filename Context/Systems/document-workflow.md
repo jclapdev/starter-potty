@@ -21,7 +21,7 @@ Example: `Reference/Manuals/CONNECTORS/Crowdstrike_Falcon_Connector_Guide.pdf`
 
 ## 3. Output Location Rule
 
-- Artifacts and HTML exports → `AI-Workshop/Artifacts/`
+- Artifacts and HTML exports → `AI-Workshop/Projects/` (saved with the project they belong to)
 - Summaries and digests → `AI-Workshop/Projects/`
 - Wiki pages (source summaries, concept pages, entity pages, filed analyses) → `AI-Workshop/Projects/Wiki/`
 - Skills stay in `Context/Skills/`

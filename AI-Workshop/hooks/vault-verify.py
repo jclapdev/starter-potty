@@ -43,8 +43,7 @@ INDEX_SKIP_DIRS = {
 }
 # Subtree prefixes to skip (relative to vault root)
 INDEX_SKIP_PREFIXES = (
-    "AI-Workshop/Projects/Starter",
-    "AI-Workshop/Projects/Starter.zip",
+    "AI-Workshop/Starter/repo",
 )
 
 AI_TELLS = [

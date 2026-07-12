@@ -9,7 +9,6 @@ _High-level structure of this vault. Use this to orient before writing to or sea
 ```
 YourVault/
 ├── AI-Workshop/          # AI-managed working directory (Claude writes here)
-│   ├── Artifacts/        # HTML exports, rendered guides
 │   ├── hooks/            # PostToolUse hooks (vault-verify runs on every file write)
 │   ├── mcp-servers/      # The vault server (all tools + search) and kb/ (the meaning-search engine it loads)
 │   ├── install.py        # Run once to set the system up on this machine, then delete it (also updates)
@@ -55,7 +54,7 @@ YourVault/
 
 | Document Type | Location |
 |---|---|
-| HTML artifacts | `AI-Workshop/Artifacts/` |
+| HTML artifacts | `AI-Workshop/Projects/` (with the project they belong to) |
 | Summaries / digests | `AI-Workshop/Projects/` |
 | Session notes | `Context/History/` |
 | Wiki pages (source summaries, concept pages, filed analyses) | `AI-Workshop/Projects/Wiki/` |

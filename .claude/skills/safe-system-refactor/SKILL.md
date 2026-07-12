@@ -34,8 +34,8 @@ Do the refactor on an isolated git worktree branch, never directly on the live v
 Fix every reference found in Step 1, and remember the vault is not one copy of the truth:
 
 1. **The live vault** files.
-2. **The Starter overlay** (`AI-Workshop/public-version/starter-overlay/`): overlay copies of HUMAN.md pages, Guide pages, `.gitignore`, and settings ship from there, not from the live vault. Edit the overlay copy separately; editing only the live copy ships nothing (2026-07-07, 2026-07-11).
-3. **The build script itself** (`AI-Workshop/public-version/build-starter.py`): its ship lists (`CORE_COPIES`, `OVERLAY_ROOTS`), its generated templates (the vault-map text block), and its verify checks all name paths literally.
+2. **The Starter overlay** (`AI-Workshop/Starter/overlay/`): overlay copies of HUMAN.md pages, Guide pages, `.gitignore`, and settings ship from there, not from the live vault. Edit the overlay copy separately; editing only the live copy ships nothing (2026-07-07, 2026-07-11).
+3. **The build script itself** (`AI-Workshop/Starter/build-starter.py`): its ship lists (`CORE_COPIES`, `OVERLAY_ROOTS`), its generated templates (the vault-map text block), and its verify checks all name paths literally.
 
 Update the maps in the same pass; stale maps break navigation silently (`Context/Systems/vault-rules.md` maintenance rule).
 
@@ -56,7 +56,7 @@ Match the verification to what was touched (`Context/Systems/vault-rules.md`, No
 
 - **Always:** `python AI-Workshop/install.py --check` (servers launch, config wired, PASS/FAIL per part), and the `vault_health` tool (broken links, orphans, map drift, all should be clean).
 - **If server or search code was touched:** run the graded search quiz, `Tests/search-quiz/quiz.py`, under the kb venv python from the real vault root (a worktree has no search index and scores low for that reason alone; point `VAULT_PATH` at the real vault to compare fairly). A score below the recorded baseline blocks the ship.
-- **If the build script was touched:** `python3 AI-Workshop/public-version/build-starter.py --dry-run` before the real build.
+- **If the build script was touched:** `python3 AI-Workshop/Starter/build-starter.py --dry-run` before the real build.
 
 Done when: every check that applies has actually run and passed, and you can name the output.
 

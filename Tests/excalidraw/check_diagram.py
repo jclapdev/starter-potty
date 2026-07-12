@@ -2,7 +2,7 @@
 """
 Graded structural check for a generated .excalidraw.md file. Answer-key style:
 every check is derived from the working reference file's decoded structure
-(Personal/Albion/albion-pvp-progression-map.excalidraw.md, decoded 2026-07-12),
+(a known-good reference drawing, decoded 2026-07-12),
 not from documentation. A FAIL on any check blocks shipping the generator.
 
 Usage: python3 check_diagram.py <file.excalidraw.md>

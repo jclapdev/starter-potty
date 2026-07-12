@@ -3,7 +3,7 @@
 Generate an Obsidian Excalidraw file (.excalidraw.md) in the plain "parsed" format.
 
 Format learned 2026-07-12 from the working reference
-Personal/Albion/albion-pvp-progression-map.excalidraw.md (decoded from its
+a known-good reference drawing (decoded from its
 compressed-json block with lzstring). Facts this generator relies on:
 
   - Frontmatter needs `excalidraw-plugin: parsed` and an `excalidraw` tag.

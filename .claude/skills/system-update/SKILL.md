@@ -40,7 +40,7 @@ For each item identified as **removed** in Step 2, run a grep across the vault:
 
 ```bash
 grep -r "<removed-term>" . --include="*.md" -l \
-  --exclude-dir=.git --exclude-dir=AI-Workshop/Projects/Starter
+  --exclude-dir=.git --exclude-dir=AI-Workshop/Starter/repo
 ```
 
 Collect any files still referencing removed concepts. These are cleanup candidates.

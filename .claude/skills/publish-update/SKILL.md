@@ -19,7 +19,7 @@ Use this after we change the system (skills, systems, agents, maps, or the helpe
 
 3. Rebuild and publish the shareable Starter:
    ```
-   python AI-Workshop/public-version/build-starter.py
+   python AI-Workshop/Starter/build-starter.py
    ```
    This copies the latest system into the Starter, strips out anything personal, checks it, then commits and pushes the Starter automatically. If the check fails, fix what it reports and run it again. Do not move on until it says **All checks passed**. (Add `--no-push` to build without pushing.)
 
