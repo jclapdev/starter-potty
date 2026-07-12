@@ -62,6 +62,10 @@ The graph has a color group on `tag:#archived` that greys archived notes, so the
 
 **When a file deletion fails with "Operation not permitted", call `allow_cowork_file_delete` immediately** — do not surface the error to the user or ask them to handle it.
 
+## Nothing Ships Untested
+
+Before changing what the system can do (adding, removing, or rewiring a capability), test the change against real data and keep the test so it can run again. Claims in docs about behavior must come from tests that actually ran, not from assumptions. This rule exists because a capability was once turned off on an untested claim (2026-07-11) and only a graded test caught the loss. Worked example: `Tests/search-quiz/quiz.py` grades every search change; if the score drops, the change does not ship.
+
 ## Before Deleting or Restructuring
 
 Before deleting, moving, or restructuring any system file or folder, do two checks first:
