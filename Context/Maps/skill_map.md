@@ -31,6 +31,8 @@ Claude Code and Claudian pick these up natively; they need git or scripts, so De
 | skill-creator  | `.claude/skills/skill-creator/SKILL.md` | Create new skills from scratch, edit or optimize existing skills, run evals, and benchmark skill performance |
 | publish-update | `.claude/skills/publish-update/SKILL.md` | Publish system changes to every machine: rebuild the Starter, check it, and push it plus the main vault      |
 | system-update  | `.claude/skills/system-update/SKILL.md` | Re-orient after copying base-rules.md from the Starter: diffs the change, scans for stale references, reviews main.md, and produces a structured update report |
+| safe-system-refactor | `.claude/skills/safe-system-refactor/SKILL.md` | Move, rename, archive, or delete system pieces without breaking the vault, the Starter, or pulling machines; codifies the four documented refactor runs |
+| excalidraw-diagram | `.claude/skills/excalidraw-diagram/SKILL.md` | Generate an Excalidraw diagram as an Obsidian note (boxes, text, arrows) using the tested builder and graded checker in `Tests/excalidraw/` |
 
 
 ---

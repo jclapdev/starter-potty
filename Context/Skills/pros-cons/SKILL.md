@@ -13,7 +13,8 @@ description: Structures pros/cons breakdowns to cover both immediate and scalabl
 
 - User asks for pros/cons, tradeoffs, a comparison, or "help me decide between X and Y"
 - Any decision where different time horizons could reasonably lead to different conclusions
-- When main.md's "Pros and Cons Breakdowns" rule applies (i.e., always)
+
+This skill is the home of the pros/cons behavioral rule (it used to live in `base-rules.md`): always cover both the immediate and the at-scale perspective, flag when they diverge, and if the user specifies one framing, use that one.
 
 ---
 
@@ -69,7 +70,8 @@ Do not hedge into "it depends" without naming what it depends on and giving the 
 
 ## Constraints
 
-- Never cover only one framing when none was specified — this is the skill's core constraint, not optional.
+- Never cover only one framing when none was specified; this is the skill's core constraint, not optional.
+- **In a system we control, test each downside before listing it.** If a con is cheap to engineer away, it isn't a real con: fix it or name the fix, don't present it as a standing cost. Reserve cons for tradeoffs that survive that test.
 - Never produce a balanced list of pros and cons without a recommendation unless the user explicitly says they want to make the call themselves. Balanced lists without a conclusion offload the hard work back to the user.
 - Do not pad. A tight three-paragraph breakdown is better than a six-section document with filler.
 - If the user asks for a pros/cons breakdown mid-task (not as the primary request), keep it proportional — don't turn a sidebar decision into a full analysis.

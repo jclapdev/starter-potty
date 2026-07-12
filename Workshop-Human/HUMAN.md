@@ -12,4 +12,4 @@ A friction-free place to dump ideas the moment you have them. You write messy; t
 2. Tell the AI to process it.
 3. Ideas become real work in the right place: a note in `Projects/`, research written into the relevant note, or a summary of what the AI did.
 
-Nothing here is read by the AI unless you ask it to look. New to all this? The full walkthrough is in the `Start_Here/` folder.
+Nothing here is read by the AI unless you ask it to look. New to all this? The owner's manual is `HUMAN.md` in the vault root.

@@ -31,7 +31,7 @@ Someone else installs the system by **downloading the Starter** (a zip, or the r
 ## Best practices
 
 - After any change meant for other machines, rebuild the Starter (`build-starter.py`) and confirm its repo is pushed. Treat Starter drift as urgent.
-- Remember overlay files (`.gitignore`, template `main.md`, `Start_Here/`, `.claude/`) ship from `starter-overlay/`, not the live vault. Edit the overlay copy, not just the vault one.
+- Remember overlay files (`.gitignore`, template `main.md`, the `HUMAN.md` pages, `.claude/`) ship from `starter-overlay/`, not the live vault. Edit the overlay copy, not just the vault one.
 - Keep personal content out of the whitelist. If you're unsure whether something ships, check `CORE_COPIES` in `build-starter.py`.
 
 ## Dig deeper →

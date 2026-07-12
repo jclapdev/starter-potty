@@ -1,182 +1,120 @@
-# How this works
+# The Owner's Manual
 
-_The whole operation, in one page. This is an AI second brain: an Obsidian vault that Claude reads, writes, and maintains alongside you._
-
-You see the files in Obsidian. Claude works in the same folder. Nothing is hidden in an app somewhere else, it is all plain Markdown on your disk.
+_One page that explains the whole system: what each piece is, what it does for you, and how to use it day to day._
 
 ---
 
-## Contents
+## The whole idea
 
-1. [The big idea](#the-big-idea)
-2. [What you need first](#what-you-need-first)
-3. [Install (one command)](#install-one-command)
-4. [Where to put this folder](#where-to-put-this-folder)
-5. [Two ways to run Claude](#two-ways-to-run-claude)
-6. [How a session works](#how-a-session-works)
-7. [The pieces](#the-pieces)
-8. [Looking something up?](#looking-something-up)
-9. [Day to day](#day-to-day)
-10. [Keeping it healthy](#keeping-it-healthy)
-11. [Sharing this system](#sharing-this-system)
-12. [Updating to a new version](#updating-to-a-new-version)
-13. [Troubleshooting](#troubleshooting)
+Everything lives in this one folder. You read and write notes in **Obsidian**, a free notes app. **Claude** opens the same folder and reads, writes, and organizes the same notes. Because it is one folder, anything Claude writes shows up for you instantly, and anything you write is there for Claude next time.
+
+Nothing is hidden in an app or a cloud somewhere. Every note, every rule, even Claude's own instructions are plain text files you can open and change. If you stopped using Obsidian or Claude tomorrow, every note would still open in any text editor.
+
+Claude's job is to help you write, research, organize, and remember. The six helpers below all exist for that one reason: they make Claude better at reading, finding, writing, and remembering your notes.
 
 ---
 
-## The big idea
+## The six helpers
 
-One folder, two viewers. **Obsidian** is your window into the notes. **Claude** (in the desktop app or in the terminal) opens the same folder and can read and edit those notes, run small programs, and keep the system tidy. Because it is the same folder, anything Claude writes appears in Obsidian instantly, and anything you write is there for Claude next time.
+**1. The finder.** A small program that runs quietly in the background whenever Claude is open. When Claude needs a note, a saved procedure, or the list of unfinished work, it asks the finder instead of opening folders and reading file after file. You never see it work; you just notice Claude gets to the right note fast.
 
-The system gives Claude a memory and a set of habits so it does not start cold every session. Those habits live in the `Context/` folder as plain text you can read.
+**2. The meaning memory.** Search that works even when you can't remember the exact words. Ask about "that note where we compared the two servers" and it finds the note because it matches what you *mean*, not the letters you typed. It lives inside the finder, so there is one background program doing both jobs, and it comes with a graded test (questions with known right answers) that every search change must pass before it ships.
 
----
+**3. Skills.** Step-by-step procedures Claude has written down for jobs that repeat, like ending a session cleanly or building something new. When you ask for that kind of job, Claude follows its saved steps instead of improvising, so the job comes out the same way every time. When you notice yourself asking for the same thing again and again, say "turn this into a skill" and it becomes one.
 
-## What you need first
+**4. Memory files.** Short notes Claude keeps about how you like to work: plain words, no padding, make the call and do the work. It reads them at the start of every session, so you never have to repeat a preference twice.
 
-Install these yourself, once, the way you normally would:
+**5. The maps.** Index pages that list what exists and where it lives: one for the folders, one for the skills, one for the background helpers, one for the rules. Whenever something new is added, its map is updated in the same breath. This is what keeps the folder useful as it grows instead of turning into a junk drawer.
 
-- **Python** 3.9 or newer
-- **Obsidian**
-- **Claude**: the desktop app, Claude Code (the terminal tool), or both
+**6. The Starter and the installer.** The Starter is a cleaned copy of this whole system with nothing personal in it, ready to hand to a friend or put on your own second computer. The installer (`AI-Workshop/install.py`) wires the system to a machine, checks every part, and prints PASS or FAIL so you can see it worked. The same command later fetches and applies updates.
 
-That is the whole prerequisite list. Everything else is in this folder.
+Two files sit above all of this: **`main.md`** holds your personal settings and rules (who you are, how you want Claude to talk), and **`CLAUDE.md`** is the short pointer that sends Claude to it.
 
 ---
 
-## Install (one command)
+## Getting set up
 
-Put this folder in your home folder (the next section explains why), open a terminal in it, and run:
+You install three things yourself, once: **Python** (3.9 or newer), **Obsidian**, and **Claude** (the desktop app, Claude Code in the terminal, or both).
+
+**Where the folder goes:** keep the vault in your home folder (`~/ClaudeVault` on Mac, `C:\Users\YourName\ClaudeVault` on Windows). The Claude desktop app only opens folders that really live in your home folder, and on many computers OneDrive or iCloud quietly relocates Desktop and Documents. The installer checks this first and tells you exactly what to do if the spot is bad.
+
+**Then run the installer.** Open a terminal in this folder and run:
 
 ```bash
 python AI-Workshop/install.py
 ```
 
-That is the entire setup. It works on macOS, Windows, and Linux because it uses the exact Python you ran it with, figures out your own paths, and writes the config each Claude app needs. It also sets up the knowledge base, which the first time downloads about 1 GB of libraries, so give it a few minutes. When it finishes it prints a plain PASS/FAIL for each part (rules, the vault server, the knowledge base) so you can see it is wired up.
+It sets up the meaning memory (the first run downloads about 1 GB, so give it a few minutes), writes the settings each Claude app needs using your machine's own paths, and ends with a PASS/FAIL check of every part. If something failed, the message names the exact command that fixes it. To set up without the 1 GB download, add `--no-kb`.
 
-Restart Claude afterward and the system is live. You can delete `install.py` when it is done; nothing at runtime needs it. Run it again any time to update or repair. It checks first and changes only what needs changing, and it cleans up leftovers from older versions on its own. On a machine that is already set up right, a re-run changes nothing and says so. To only inspect a machine without changing anything, run `python AI-Workshop/install.py --check`; it prints PASS/FAIL for each part.
+**Then connect Claude**, either way or both:
 
-Want to skip the 1 GB knowledge-base download? Run `python AI-Workshop/install.py --no-kb`.
+1. **Claude desktop app:** fully quit and reopen Claude, switch to Cowork mode, pick this folder when asked, and type `read your instructions`.
+2. **Claude Code (terminal):** open a terminal in this folder and run `claude`. It finds the instruction files on its own.
 
-> Why one command works everywhere: everything machine-specific (where Python lives, where this folder is, Windows vs Mac path styles) is worked out on your machine when you run it. The shared files carry none of it, so the same package works for everyone.
-
----
-
-## Where to put this folder
-
-Put the vault in your **home folder** (`~/ClaudeVault` on Mac, `C:\Users\YourName\ClaudeVault` on Windows). The Claude desktop app (Cowork) only opens a folder whose real location is inside your home folder, so a vault kept there always works. On some computers the Desktop and Documents folders are quietly relocated by OneDrive or iCloud, which is why a vault sitting directly on the Desktop can be rejected. If you want it reachable from your Desktop, make a shortcut or alias to it there yourself.
+If Claude can't see your files, it is pointed at the wrong folder: make sure the folder Claude opened is the same one shown in Obsidian's title bar.
 
 ---
 
-## Two ways to run Claude
+## Your first ten minutes
 
-Both read the same vault. Use either or both.
-
-1. **Claude desktop app (Cowork)**: no terminal. Open Claude, switch to Cowork, pick this folder when asked, then type **`read your instructions`**. You work by chatting.
-2. **Claude Code**: a terminal tool that can do more at once (edit many files, run scripts). Install it, open a terminal in this folder, and run `claude`. It reads `CLAUDE.md` automatically.
-
-The `Start_Here/` folder has step-by-step onboarding if this is your first time.
-
----
-
-## How a session works
-
-Three moments:
-
-1. **Start:** say **`read your instructions`**. Claude loads your rules and tells you the last session and what is open. It does not guess, it reads.
-2. **Work:** just describe what you want. Claude picks the right habit ("skill") for the job. You do not need to name files or steps.
-3. **End:** say **`wrap up`**. Claude reviews the session, updates its maps and memory, and writes a short handoff note so the next session has context.
-
-A few words trigger set behaviors any time:
-
-| Say this | Claude does |
-|---|---|
-| `read your instructions` | Loads rules, shows last session + open work |
-| `status` | A read-only snapshot: what it can do, what is open |
-| `wrap up` | The full end-of-session cleanup and handoff |
-| `research` | Searches first, labels confidence, cites sources |
-
----
-
-## The pieces
-
-Everything Claude uses to stay consistent lives in `Context/`. You rarely edit these by hand; Claude maintains them.
-
-- **Skills** (`Context/Skills/`): reusable, step-by-step procedures (for example: wrap up a session, review a vault, build a new skill). Claude chooses the right one for your request.
-- **Systems** (`Context/Systems/`): the rules of how the vault works: behavior and tone (`base-rules.md`), how vault work happens (`vault-rules.md`), and the session lifecycle. Your personal preferences live in `main.md` at the root.
-- **Maps** (`Context/Maps/`): index files that say where everything is and what exists: `skill_map`, `agent_map`, `systems_map`, `vault_map`. These keep navigation fast as the vault grows.
-- **Agents** (`Context/Agents/`): focused background helpers Claude can hand a self-contained job to (for example, scanning the vault for broken links).
-- **Memory and history** (`Context/Memory/`, `Context/History/`): durable notes on how you like to work, dated session notes, and `open-work.md`, the single list of what is still open.
-
-The engines that make this fast live in `AI-Workshop/`:
-
-- **`mcp-servers/vault/`**: the navigation server (the `vault` connector). Pure Python standard library, nothing to install. It lets Claude look up skills, search notes, and check links without loading whole files.
-- **`mcp-servers/kb/`**: the knowledge base. Adds search by meaning over your notes. Its tools run inside the `vault` connector, so there is no separate `kb` connector. Set up by default; skip it with `install.py --no-kb`.
-- **`hooks/`**: small checks that run automatically when Claude writes a file (for example, flagging a broken link right away).
-- **`install.py`**: the one setup script. Run it once to wire the system to this machine, then delete it if you like.
-
----
-
-## Looking something up?
-
-This page is the overview. When you want to understand one specific piece:
-
-- **Guide** (`Context/Guide/`): one plain-language page per mechanism: what it's for, how it works, when it touches you, and how to get the best out of it. This is the ongoing reference after onboarding.
-- **Glossary** (`Context/Systems/glossary.md`): a one-line definition for any term you hit (connector, skill, agent, hook, and the rest).
+1. Open `main.md` and fill in the **Who I Am** section: your name, what you do, what you want this for. A few sentences is plenty. Claude reads it every session.
+2. In the chat, type `read your instructions`. On a fresh vault Claude confirms setup worked and offers a starting point.
+3. Try something real, in your own words: "Research a topic I care about and file it as a note I can come back to," or "Here's what I'm working on, make a project note for each."
+4. When you're done, say `wrap up`. Claude files what happened and writes itself a handoff note, so the next session starts where this one stopped.
 
 ---
 
 ## Day to day
 
-You mostly just talk to it. Some examples:
+You mostly just talk. Describe what you want; Claude picks the right skill on its own. A few words trigger set behaviors any time:
 
-- "Read your instructions, then help me plan this week."
-- "Summarize the three notes in Projects and file the result in the wiki."
-- "Review this note and link it to anything related."
-- "Wrap up."
+| Say this | Claude does |
+|---|---|
+| `read your instructions` | Loads your rules, shows the last session and what's open |
+| `status` | A read-only snapshot: what it can do, what's open |
+| `wrap up` | The full end-of-session cleanup and handoff |
+| `research` | Searches first, labels confidence, links every source |
 
-Claude reaches for the right skill on its own. If a request is ambiguous, it asks before guessing. If it needs something only the terminal can do, it will say so.
+Two habits make the system compound:
 
----
+- **The inbox.** Drop messy ideas, half-thoughts, and pasted links in `Workshop-Human/` and tell Claude to process them. You write messy; it turns the mess into real notes and plans.
+- **The wrap-up.** Ending sessions with `wrap up` is what carries context across days. Skipping it breaks nothing, but every session after a wrap-up starts warm instead of cold.
 
-## Keeping it healthy
-
-The system maintains itself, with two habits:
-
-- **Wrap up** at the end of a working session keeps maps, memory, and open work current.
-- A **weekly health check** (in `AI-Workshop/Scheduled/`) validates links and maps and flags anything drifting.
-
-You do not have to run these manually beyond saying "wrap up."
+The system also maintains itself: a weekly health check (in `AI-Workshop/Scheduled/`) validates the links and maps and flags anything drifting.
 
 ---
 
-## Sharing this system
-
-This vault doubles as a shareable starter kit. The build that produces the shareable copy lives in `AI-Workshop/public-version/build-starter.py`; it strips out anything personal and machine-specific, leaving the system skeleton plus the one install script.
-
-Hand someone the Starter (a zip, or the repo link). They install Python, Obsidian, and Claude, unzip the folder into their home folder, and run `python AI-Workshop/install.py`. Because none of the shared files contain absolute paths or assume a particular Python, it works the same on a fresh Windows, macOS, or Linux machine. That run also sets up the knowledge base, which downloads about 1 GB of libraries the first time. If that download ever fails, the rest of the system still works and re-running the installer finishes it.
-
----
-
-## Updating to a new version
+## Updating
 
 One command on any machine:
 
-```
+```bash
 python AI-Workshop/install.py --update
 ```
 
-It gets the latest system files itself (git pull on a git-based vault, a download of the published Starter otherwise), applies them, and re-runs the install. It never starts over and never touches your work: `Context/History`, `Context/Memory`, `main.md`, your notes, and your knowledge-base sources stay exactly as they are, and every system file it replaces is saved first in `AI-Workshop/.update-backups/`. If a machine's system files are ever missing or broken, a plain `python AI-Workshop/install.py` repairs them the same way. Restart Claude when it finishes.
+It fetches the latest system files itself, applies them, and re-runs the setup check. It never touches your own work: your notes, history, memory, and `main.md` stay exactly as they are, and every file it replaces is backed up first to `AI-Workshop/.update-backups/`. Restart Claude when it finishes. To inspect a machine without changing anything, run `python AI-Workshop/install.py --check`.
 
 ---
 
-## Troubleshooting
+## Sharing it
 
-- **"Invalid folder" / "outside your home directory" when picking the folder in the Claude desktop app.** The vault's real location is outside your home folder (often because it sits on a Desktop that OneDrive or iCloud has relocated, or on an external drive). Move the `ClaudeVault` folder into your home folder and run `python AI-Workshop/install.py` again. See [Where to put this folder](#where-to-put-this-folder).
-- **"Claude can't see my files."** It is pointed at the wrong folder. Make sure the folder Claude opened is the same one open in Obsidian's title bar.
-- **"A connector isn't showing up."** Run `python AI-Workshop/install.py` again, then fully restart the Claude app. New servers in Claude Code prompt for approval the first time, which is expected.
-- **"I got errors about installing something."** That is the knowledge base download (about 1 GB). The rest of the system still works without it. Run `python AI-Workshop/install.py` again to retry, or `python AI-Workshop/install.py --no-kb` to set up without it.
+This vault doubles as a kit you can give away. A build script (`AI-Workshop/public-version/build-starter.py`) produces the Starter: the same system with everything personal stripped out. The person you give it to installs Python, Obsidian, and Claude, unzips the folder into their home folder, and runs the same one installer command. It works the same on Mac, Windows, and Linux because nothing in the shared files assumes a particular machine.
 
 ---
 
-_For the structure of every folder, see `Context/Maps/vault_map.md`. For your personal settings, see `main.md`._
+## If something's off
+
+- **"Invalid folder" when picking the folder in the desktop app:** the vault's real location is outside your home folder (usually OneDrive or iCloud relocated it). Move the vault into your home folder and run the installer again.
+- **Claude can't see your files:** wrong folder. Match it to the one in Obsidian's title bar.
+- **A helper isn't showing up:** run the installer again, then fully restart the Claude app. Claude Code asks you to approve new helpers the first time; that's expected.
+- **Errors about downloading during install:** that's the 1 GB meaning-memory download. Everything else still works without it; run the installer again to retry.
+
+---
+
+## Looking something up
+
+- **The Guide** (`Context/Guide/`): one plain page per mechanism, including the Obsidian shortcuts set up for you.
+- **The glossary** (`Context/Systems/glossary.md`): one-line definitions for any term you hit.
+- **The folder map** (`Context/Maps/vault_map.md`): what every folder is for.
+
+Obsidian's own help lives at https://help.obsidian.md, with links between notes explained at https://help.obsidian.md/links.

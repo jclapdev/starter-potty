@@ -80,8 +80,9 @@ STRUCTURAL = [
     (re.compile(r"not just\b.{1,50}?,\s*(it'?s|it is|its|they'?re|they are)\b", re.IGNORECASE), "negative parallelism (\"not just X, it's Y\")"),
     # Clickbait teasers / curiosity gaps (section 6) — dangling a payoff
     # instead of stating it. State the fact plainly instead.
-    (re.compile(r"\bthe (one|single) (rule|trick|thing|things|secret|tip|change|mistake|fix|step|move|reason|part|piece|bit|catch|problem|issue|question|exception|point|lesson|takeaway|caveat|gotcha|kicker)\b", re.IGNORECASE),
-     "clickbait teaser (\"the one/single X…\") — state the point plainly"),
+    (re.compile(r"\bthe (one|single) (rule|trick|thing|things|secret|tip|change|mistake|fix|step|move|reason|part|piece|bit|catch|problem|issue|question|exception|point|lesson|takeaway|caveat|gotcha|kicker"
+                r"|check|command|call|habit|fact|tool|test|task|feature|setting|difference|key|job|spot|place|word|line|page|leg)\b", re.IGNORECASE),
+     "spotlight/teaser (\"the one/single X…\") — drop the spotlight, state it plainly"),
     (re.compile(r"\b(rule|mistake|trick|secret|thing|part|tip)\b.{0,30}?\b(almost\s+)?(everyone|nobody|no one)\b.{0,20}?\b(miss(es)?|make(s)?|know(s)?|forget(s)?|tell(s)?)\b", re.IGNORECASE),
      "clickbait teaser (\"the X (almost) everyone misses/makes\") — state it plainly"),
     (re.compile(r"\bwhat (nobody|no one|most people) (ever )?tells? you\b", re.IGNORECASE),
@@ -95,11 +96,12 @@ STRUCTURAL = [
 EM_DASH = "—"  # —
 
 
-def build_note_index():
+def build_note_index(vault_root=None):
     """Return a set of lowercase note names (without .md) in the vault."""
+    vault_root = vault_root or VAULT_ROOT
     names = set()
-    for root, dirs, files in os.walk(VAULT_ROOT):
-        rel_root = os.path.relpath(root, VAULT_ROOT)
+    for root, dirs, files in os.walk(vault_root):
+        rel_root = os.path.relpath(root, vault_root)
         # Skip hidden and system dirs
         dirs[:] = [
             d for d in dirs
@@ -184,10 +186,19 @@ def main():
     abs_path = Path(file_path).resolve()
 
     # Only scan files within this vault
+    root = VAULT_ROOT
     try:
-        rel_path = abs_path.relative_to(VAULT_ROOT)
+        rel_path = abs_path.relative_to(root)
     except ValueError:
         sys.exit(0)
+
+    # Worktree normalization: a file edited in .claude/worktrees/<name>/ is the
+    # same vault file at a different path. Treat the worktree as the root so
+    # LANG_SKIP matches and links resolve against the files as they exist there.
+    parts = rel_path.parts
+    if len(parts) > 3 and parts[0] == ".claude" and parts[1] == "worktrees":
+        root = root / parts[0] / parts[1] / parts[2]
+        rel_path = abs_path.relative_to(root)
 
     if not abs_path.exists():
         sys.exit(0)
@@ -206,7 +217,7 @@ def main():
     blocking = []   # language tells in introduced text — forces a fix
 
     # 1. Broken-link scan of the whole file (advisory)
-    note_index = build_note_index()
+    note_index = build_note_index(root)
     for link in check_broken_links(content, note_index):
         advisory.append(f"  broken link  [[{link}]]")
 

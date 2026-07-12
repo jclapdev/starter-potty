@@ -20,7 +20,7 @@ The main agent appends these as a structured block at the end of this prompt:
 |---|---|---|
 | `vault_path` | string | Absolute path to the vault root |
 | `target_paths` | list of strings | Vault-relative paths of the files to review |
-| `audience` | string (optional) | Who the doc is for. If omitted, infer from path: `Context/Guide/`, `glossary.md`, any `HUMAN.md`, `Start_Here/`, and Wiki pages are user-facing; `SKILL.md`, `Context/Systems/`, and `Context/Agents/` files are AI-facing. Audience governs jargon strictness. |
+| `audience` | string (optional) | Who the doc is for. If omitted, infer from path: `Context/Guide/`, `glossary.md`, any `HUMAN.md`, and Wiki pages are user-facing; `SKILL.md`, `Context/Systems/`, and `Context/Agents/` files are AI-facing. Audience governs jargon strictness. |
 
 ---
 

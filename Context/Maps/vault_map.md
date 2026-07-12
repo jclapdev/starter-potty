@@ -19,8 +19,6 @@ YourVault/
 │
 ├── Workshop-Human/       # Human-managed scratch space (brain-dump intake) — excluded from scans
 │
-├── Start_Here/           # Onboarding, read these first to get set up
-│
 ├── Context/
 │   ├── Agents/           # Sub-agent prompt files (one folder per agent) — see [[agent_map]]
 │   ├── History/          # Session notes + open-work.md (outstanding work)

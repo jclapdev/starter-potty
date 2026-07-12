@@ -68,6 +68,7 @@ Furthermore, Moreover, Additionally, Consequently, Subsequently, Nevertheless, N
 - Vague attribution: "studies show", "experts say", "it is widely believed", with no source.
 - Over-explaining the obvious; defining terms no one asked about.
 - **Clickbait teaser / curiosity gap:** dangling an answer instead of stating it. "the one rule that fixes most problems", "the mistake almost everyone makes", "here's the part nobody tells you", "and that changes everything". Just state the fact plainly. If the point is that fame only lands on worn gear, write that, don't tease it.
+- **Spotlight "the one X" (banned; user callout 2026-07-12):** dressing an item up as "the one X" or "here's the one thing" to make it feel important. "the one check only you can do", "the one command that wires a machine", "the one fact that makes this possible". Drop the spotlight and say it directly: "only you can do this check", "one command wires a machine", "this works because…". Referring back to a specific item ("match it to the one in the title bar", "the one you sent") is normal English and fine; the tell is the dramatic lead-in.
 
 ## 7. Formatting and punctuation tells
 
@@ -94,7 +95,7 @@ Run before delivering any written work:
 3. Find any "It's worth noting / At its core / In today's" filler. Cut.
 4. Check for the rule-of-three cadence and "not just X, it's Y". Rewrite.
 5. Check the opening sentence: does it restate the prompt? Cut.
-5a. Check headings and lead-ins for clickbait teasers ("the one rule…", "the mistake everyone makes…"). State the point plainly instead.
+5a. Check headings and lead-ins for clickbait teasers ("the one rule…", "the mistake everyone makes…") and spotlight framing ("the one check…", "here's the one thing…"). State the point plainly instead.
 6. Check the ending: is it a summary that repeats the body? Cut.
 7. Read the first word of each paragraph: do several share the same transition? Vary them.
 

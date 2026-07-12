@@ -1,10 +1,6 @@
-# 5 - Obsidian Basics and Shortcuts
+# Obsidian Basics and Shortcuts
 
-_[[Home]] · Back: [[4 - How the Vault Is Organized]] · Next: [[6 - Going Further]]_
-
----
-
-Reference page. Skim it now, come back when you need it; nothing here blocks you from using the system.
+_Reference page: the handful of Obsidian features you'll actually use, and the keyboard shortcuts this vault ships with._
 
 ## The handful of features you'll actually use
 
@@ -65,7 +61,3 @@ Official help: https://help.obsidian.md
 ### Changing or adding shortcuts
 
 Settings, then Hotkeys. Search any action and set your own key. Full guide: https://obsidian.md/help/hotkeys
-
----
-
-_[[Home]] · Back: [[4 - How the Vault Is Organized]] · Next: [[6 - Going Further]]_

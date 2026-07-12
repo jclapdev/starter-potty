@@ -55,6 +55,10 @@ After a preferred theme is selected:
 3. Ensure proper contrast and readability
 4. Maintain the theme's visual identity across all slides
 
+## Describing Changes During Design Work
+
+This rule moved here from `base-rules.md` because it only matters during visual work. When iterating on visual or design output (themes, layouts, UI), describe every change in outcome terms, what it will look like, never in implementation terms. "H3 headings will be pink" works. "Setting `--h3-color` to `#FF5879`" does not; the user cannot see CSS property names on a screen. This applies to every change description in a design session, not just the first one. Technical specs belong in the file, not in the explanation.
+
 ## Create your Own Theme
 
 To handle cases where none of the existing themes work for an artifact, create a custom theme. Based on provided inputs, generate a new theme similar to the ones above. Give the theme a similar name describing what the font/color combinations represent. Use any basic description provided to choose appropriate colors/fonts. After generating the theme, show it for review and verification. Following that, apply the theme as described above.

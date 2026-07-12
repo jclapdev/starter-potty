@@ -16,9 +16,14 @@ A focused background helper the AI hands a self-contained job to (for example, s
 An extra tool Claude can use, added through a small program called an MCP server. "Connector" is the app's word for it; "MCP" is the underlying standard. This system ships one: `vault`. The installer (`AI-Workshop/install.py`) registers it in both Claude apps.
 **Touches you:** when you add or build one, or when one "isn't showing up" (re-run the installer, then restart the app).
 
+### Excalidraw
+
+The Obsidian drawing plugin, and the kind of note it displays as an editable canvas (`.excalidraw.md`). The AI can generate these drawings; see the [[excalidraw-diagram]] guide.
+**Touches you:** when you ask for a diagram or flowchart. First open: switch the note to Excalidraw view from its More Options menu.
+
 ### hook
 
-A small check that runs automatically whenever Claude writes a file — for example, flagging a broken link or an AI-language tell right away.
+A small check that runs automatically whenever Claude writes a file, for example flagging a broken link or an AI-language tell right away.
 **Touches you:** silently, on every file write. You only notice if it catches something.
 
 ### knowledge base (kb)

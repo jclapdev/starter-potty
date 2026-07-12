@@ -1,8 +1,8 @@
 # Getting Started
 
-**The getting-started guide has moved to the [[Home|Start_Here]] folder.**
+**The getting-started guide is `HUMAN.md`, the owner's manual at the top of the vault.**
 
-Open **[[Home]]** in the `Start_Here/` folder at the top of the vault. It walks you through Obsidian, this vault's layout, the built-in shortcuts, and how to connect your AI, in six short pages.
+Open **HUMAN.md** in the vault root. One page covers the whole system: what each piece is, how to get set up, your first ten minutes, and how to work day to day. The Obsidian shortcuts reference lives in `Context/Guide/obsidian-shortcuts.md`.
 
 ---
 

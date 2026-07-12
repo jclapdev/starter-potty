@@ -1179,7 +1179,7 @@ def _check_maps():
 # Folders whose notes follow a shared structured format — the cosmetic
 # heading-spacing check applies only here, not to personal/free-form notes.
 _STRUCTURED_DIRS = ("Context/Skills/", "Context/Systems/", "Context/Agents/",
-                    "Context/Maps/", "Context/Guide/", "Start_Here/")
+                    "Context/Maps/", "Context/Guide/")
 
 
 def _lint_notes():
