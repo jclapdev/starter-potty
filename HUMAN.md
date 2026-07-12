@@ -111,7 +111,7 @@ Everything Claude uses to stay consistent lives in `Context/`. You rarely edit t
 The engines that make this fast live in `AI-Workshop/`:
 
 - **`mcp-servers/vault/`**: the navigation server (the `vault` connector). Pure Python standard library, nothing to install. It lets Claude look up skills, search notes, and check links without loading whole files.
-- **`mcp-servers/kb/`**: the knowledge base (the `kb` connector). Adds search by meaning over your notes. Set up by default; skip it with `install.py --no-kb`.
+- **`mcp-servers/kb/`**: the knowledge base. Adds search by meaning over your notes. Its tools run inside the `vault` connector, so there is no separate `kb` connector. Set up by default; skip it with `install.py --no-kb`.
 - **`hooks/`**: small checks that run automatically when Claude writes a file (for example, flagging a broken link right away).
 - **`install.py`**: the one setup script. Run it once to wire the system to this machine, then delete it if you like.
 

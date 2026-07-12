@@ -11,7 +11,7 @@ YourVault/
 ├── AI-Workshop/          # AI-managed working directory (Claude writes here)
 │   ├── Artifacts/        # HTML exports, rendered guides
 │   ├── hooks/            # PostToolUse hooks (vault-verify runs on every file write)
-│   ├── mcp-servers/      # System MCP servers: vault/ (navigation, stdlib) and kb/ (LanceDB knowledge base)
+│   ├── mcp-servers/      # The vault server (all tools + search) and kb/ (the meaning-search engine it loads)
 │   ├── install.py        # Run once to set the system up on this machine, then delete it (also updates)
 │   ├── Projects/         # The AI's per-project working data
 │   │   └── Wiki/         # LLM-owned knowledge layer (source summaries, concept pages, filed analyses)

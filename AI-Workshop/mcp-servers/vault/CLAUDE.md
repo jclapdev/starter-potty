@@ -1,6 +1,19 @@
-# Vault MCP — operational notes
+# Vault MCP, operational notes
 
-**No install needed.** Pure Python stdlib (3.7+). Any system `python3` runs it.
+**The system's one server (v3).** It carries the 13 vault tools plus, when the
+kb libraries are installed for the running python, the 5 knowledge-base tools
+(the standalone kb server registration is retired). `search_notes` is the one
+search front door: it fuses keyword ranking (BM25/FTS5) with meaning-based
+ranking (embeddings via the kb engine in `../kb/server.py`) and reports its
+`mode` (`hybrid` or `keyword-only`) in every result and in `get_session_brief`.
+Session-diary notes (`Context/History/`) are down-ranked so living notes answer
+first. Fusion weight measured by `Tests/search-quiz/quiz.py`. Run that quiz
+before shipping any change that touches search; a score drop blocks the ship.
+
+**No install needed for keyword mode.** Pure Python stdlib (3.7+). Any system
+`python3` runs it; without the kb libraries it serves keyword-only search and
+says so on stderr at startup. `install.py` registers it under the kb venv
+python when that venv works, which is what turns hybrid mode on.
 
 **Run:** stdio transport, registered via `claude_desktop_config.json`. Set `VAULT_PATH` env var to the vault root (defaults to three levels above `server.py` if unset).
 

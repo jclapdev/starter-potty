@@ -38,6 +38,7 @@ import json
 import os
 import re
 import sys
+import threading
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
@@ -49,12 +50,14 @@ KB_MODEL_NAME = os.environ.get("KB_MODEL_NAME", "all-MiniLM-L6-v2")
 
 # Vault root (server lives at <vault>/AI-Workshop/mcp-servers/kb/server.py).
 KB_VAULT_DIR = Path(os.environ.get("KB_VAULT_PATH", str(_SERVER_DIR.parent.parent.parent)))
-# Optional startup ingest of extra folders (tagged tool="vault"). Off by
-# default since 2026-07-11: vault content is the vault server's job (its FTS5
-# index searches everything), and double-indexing the same files here cost
-# embedding time without adding a capability. Set KB_INGEST_PATHS
-# (os.pathsep-separated) to re-enable for specific folders.
-_default_ingest = ""
+# Startup ingest of the vault's own notes (tagged tool="vault"), so they stay
+# searchable by meaning as well as by keyword. On by default (Context/ +
+# Reference/) — benchmarked 2026-07-11: meaning-based search answers vaguely
+# worded questions that keyword search misses entirely, so this is a distinct
+# capability, not duplicate work. Set KB_INGEST_PATHS (os.pathsep-separated)
+# to override the folders, or set it empty to disable.
+_default_ingest = os.pathsep.join(
+    [str(KB_VAULT_DIR / "Context"), str(KB_VAULT_DIR / "Reference")])
 KB_INGEST_PATHS = [Path(p) for p in
                    os.environ.get("KB_INGEST_PATHS", _default_ingest).split(os.pathsep)
                    if p.strip()]
@@ -134,12 +137,17 @@ def _ingest_schema():
     ])
 
 
+_MODEL_LOCK = threading.Lock()
+
+
 def _get_model():
     global _MODEL
     if _MODEL is None:
-        from sentence_transformers import SentenceTransformer
-        _log("loading embedding model %s" % KB_MODEL_NAME)
-        _MODEL = SentenceTransformer(KB_MODEL_NAME)
+        with _MODEL_LOCK:
+            if _MODEL is None:
+                from sentence_transformers import SentenceTransformer
+                _log("loading embedding model %s" % KB_MODEL_NAME)
+                _MODEL = SentenceTransformer(KB_MODEL_NAME)
     return _MODEL
 
 
@@ -437,6 +445,10 @@ def _gather_files(path):
     files = []
     for p in sorted(path.rglob("*")):
         if p.is_file() and p.suffix.lower() in _SUPPORTED_EXT:
+            # Hidden folders (.memory-snapshot, .obsidian) duplicate live notes;
+            # indexing both puts the same content in results twice.
+            if any(part.startswith(".") for part in p.relative_to(path).parts[:-1]):
+                continue
             files.append(p)
     return files
 

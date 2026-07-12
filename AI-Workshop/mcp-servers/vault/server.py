@@ -737,9 +737,67 @@ def _snippet(body, query, width=200):
     return (s[:width] + "…") if len(s) > width else s
 
 
-def search_notes_core(query, limit=5, scope=None):
+# --------------------------------------------------------------------------- #
+# Semantic layer (optional): the kb engine from the sibling kb/ folder. When
+# its dependencies are installed for the running python, this process also
+# serves the five kb tools and search_notes fuses meaning-based results with
+# the keyword ranking. Without them, every tool below still works and search
+# reports keyword-only mode instead of failing.
+# --------------------------------------------------------------------------- #
+_KB = None
+_KB_ERR = None
+# Fusion weight for meaning-based matches relative to keyword matches (1.0 =
+# equal). Benchmarked on this vault 2026-07-11; see Tests/search-quiz.
+_SEM_WEIGHT = float(os.environ.get("VAULT_SEM_WEIGHT", "1.25"))
+
+
+def _load_kb():
+    global _KB, _KB_ERR
+    if _KB is not None or _KB_ERR is not None:
+        return _KB
+    try:
+        import importlib.util as ilu
+        for dep in ("lancedb", "sentence_transformers"):
+            if ilu.find_spec(dep) is None:
+                raise ImportError("%s not installed for this python" % dep)
+        kb_path = Path(__file__).resolve().parent.parent / "kb" / "server.py"
+        spec = ilu.spec_from_file_location("kb_engine", kb_path)
+        mod = ilu.module_from_spec(spec)
+        sys.modules["kb_engine"] = mod
+        spec.loader.exec_module(mod)
+        _KB = mod
+    except Exception as exc:  # noqa: BLE001 — any load failure means keyword-only
+        _KB_ERR = str(exc)
+        _KB = None
+    return _KB
+
+
+def search_mode():
+    if _load_kb() is not None:
+        return "hybrid"
+    return "keyword-only (semantic layer unavailable: %s)" % _KB_ERR
+
+
+def _rel_vault_path(sp):
+    """Absolute source_path from a kb row -> vault-relative path, best effort."""
+    p = str(sp)
+    roots = [str(VAULT)]
+    if _KB is not None:
+        roots.append(str(_KB.KB_VAULT_DIR))
+    for root in roots:
+        root = root.rstrip("/")
+        if p.startswith(root + "/"):
+            return p[len(root) + 1:]
+    for marker in ("/Context/", "/Reference/", "/AI-Workshop/"):
+        i = p.find(marker)
+        if i >= 0:
+            return p[i + 1:]
+    return p
+
+
+def _keyword_matches(query, limit, scope):
     if _use_sqlite():
-        return _sql_search(query, limit, scope)
+        return _sql_search(query, limit, scope)["matches"]
     index = _build_index()
     notes = index["notes"]
     if scope:
@@ -747,9 +805,88 @@ def search_notes_core(query, limit=5, scope=None):
         notes = [n for n in notes if n["rel"].lower().startswith(sc + "/") or n["rel"].lower().startswith(sc)]
     docs = [(n["rel"], n, _tok(n["title"] + " " + n["body"])) for n in notes]
     ranked = _bm25_rank(query, docs)[: max(1, int(limit))]
-    return {"query": query, "scope": scope, "matches": [
-        {"path": n["rel"], "title": n["title"], "score": sc, "snippet": _snippet(n["body"], query)}
-        for _, n, sc in ranked]}
+    return [{"path": n["rel"], "title": n["title"], "score": sc, "snippet": _snippet(n["body"], query)}
+            for _, n, sc in ranked]
+
+
+def _semantic_matches(query, limit, scope):
+    """Meaning-ranked note paths from the kb's vault index, deduped per note."""
+    kb = _load_kb()
+    if kb is None:
+        return []
+    try:
+        rows = kb.query_patterns_core("vault", query, limit * 3)["matches"]
+    except Exception:  # noqa: BLE001 — semantic failure degrades, never breaks search
+        return []
+    out = []
+    seen = set()
+    for r in rows:
+        sp = r.get("source_path")
+        if not sp:
+            continue
+        rel = _rel_vault_path(sp)
+        if rel in seen:
+            continue
+        # Stale rows (files since moved/deleted) and hidden-folder duplicates
+        # (.memory-snapshot copies) are index residue, not answers.
+        if any(part.startswith(".") for part in Path(rel).parts):
+            continue
+        if not (VAULT / rel).exists():
+            continue
+        if scope:
+            sc = scope.strip("/").lower()
+            if not (rel.lower().startswith(sc + "/") or rel.lower().startswith(sc)):
+                continue
+        seen.add(rel)
+        out.append({"path": rel, "snippet": (r.get("problem") or "")[:200]})
+        if len(out) >= limit:
+            break
+    return out
+
+
+def search_notes_core(query, limit=5, scope=None):
+    """One search front door. Keyword (BM25/FTS5) and meaning (embeddings)
+    rankings are fused with reciprocal-rank fusion; each note appears once.
+    Falls back to pure keyword ranking when the semantic layer is absent."""
+    limit = max(1, int(limit))
+    kw = _keyword_matches(query, limit * 2, scope)
+    sem = _semantic_matches(query, limit * 2, scope)
+    mode = search_mode()
+    if not sem:
+        return {"query": query, "scope": scope, "mode": mode,
+                "matches": kw[:limit]}
+    # Weighted reciprocal-rank fusion. The semantic weight is set by benchmark
+    # (Tests/search-quiz), not by taste: keyword ranking scored 0/8 on vaguely
+    # worded questions while meaning ranking carried them, so meaning weighs
+    # more — but not so much that semantic noise outruns precise keyword hits.
+    # Notes found by BOTH engines outrank everything either finds alone.
+    fused = {}
+    for rank, m in enumerate(kw):
+        e = fused.setdefault(m["path"], {"path": m["path"], "title": m.get("title"),
+                                         "snippet": m.get("snippet"), "score": 0.0,
+                                         "matched": set()})
+        e["score"] += 1.0 / (60 + rank)
+        e["matched"].add("keyword")
+    for rank, m in enumerate(sem):
+        e = fused.setdefault(m["path"], {"path": m["path"], "title": None,
+                                         "snippet": m.get("snippet"), "score": 0.0,
+                                         "matched": set()})
+        e["score"] += _SEM_WEIGHT / (60 + rank)
+        e["matched"].add("meaning")
+    # Session handoffs and their archive are diaries: they mention a bit of
+    # everything, so they match a bit of everything. Halving their fused score
+    # keeps them findable while living notes answer first.
+    for e in fused.values():
+        if e["path"].startswith("Context/History/"):
+            e["score"] *= 0.5
+    ranked = sorted(fused.values(), key=lambda e: -e["score"])[:limit]
+    return {"query": query, "scope": scope, "mode": mode, "matches": [
+        {"path": e["path"],
+         "title": e["title"] or Path(e["path"]).stem,
+         "score": round(e["score"], 4),
+         "matched": sorted(e["matched"]),
+         "snippet": e["snippet"]}
+        for e in ranked]}
 
 
 def _latest_session_file():
@@ -805,6 +942,7 @@ def get_session_brief_core():
         "last_session": last,
         "open_work": _load_open_work(),
         "preferences": _load_preferences(),
+        "search_mode": search_mode(),
         "capabilities": {
             "skills": sorted(s["name"] for s in skills),
             "agents": sorted(a["name"] for a in agents),
@@ -1408,7 +1546,7 @@ _RO = {"readOnlyHint": True, "openWorldHint": False}
 
 
 def _tool_specs():
-    return [
+    specs = [
         {"name": "find_skill",
          "description": "Find the vault skill(s) best suited to a task. Ranked matches "
                         "(name, path, description, score). Use instead of reading skill_map.md.",
@@ -1555,13 +1693,17 @@ def _tool_specs():
          "annotations": {"readOnlyHint": False, "openWorldHint": False},
          "handler": wrap_session_core},
     ]
+    kb = _load_kb()
+    if kb is not None:
+        specs.extend(kb._tool_specs())
+    return specs
 
 
 # --------------------------------------------------------------------------- #
 # Minimal MCP stdio server (JSON-RPC 2.0 over newline-delimited stdin/stdout)
 # --------------------------------------------------------------------------- #
 PROTOCOL_VERSION = "2024-11-05"
-SERVER_INFO = {"name": "vault", "version": "2.2.0"}
+SERVER_INFO = {"name": "vault", "version": "3.0.0"}
 
 # --------------------------------------------------------------------------- #
 # Rule injection: give clients that don't load CLAUDE.md themselves (Claude
@@ -1672,6 +1814,12 @@ def _serve_stdio():
 
 
 if __name__ == "__main__":
+    if _load_kb() is not None:
+        import threading
+        # Index new/changed notes in the background so serving starts at once.
+        threading.Thread(target=_KB._startup_scan, daemon=True).start()
+    else:
+        sys.stderr.write("vault server: keyword-only search (%s)\n" % _KB_ERR)
     try:
         _serve_stdio()
     except (BrokenPipeError, KeyboardInterrupt):

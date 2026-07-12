@@ -28,7 +28,8 @@ What it does, all in this one file:
     hand-copy steps.
   - Cleans up folders left over from older versions (kb-mcp, vault-mcp,
     installers), keeping any knowledge-base source files found there.
-  - Registers the system's servers (vault, kb) in the two files the apps read:
+  - Registers the system's one server (vault) in the two files the apps read
+    (the knowledge base runs inside it since v3; leftover kb entries are removed):
     .mcp.json (Claude Code / Claudian) and the Claude Desktop config. It writes
     the ABSOLUTE path of the Python you ran it with, so no "python vs python3"
     guessing. Your own servers are left alone; system entries that point at
@@ -37,7 +38,8 @@ What it does, all in this one file:
     virtualenv and installs its libraries. Skip with --no-kb.
   - Points the vault-verify hook at this machine's Python, keeping any other
     hooks you added yourself.
-  - Verifies the result (both servers actually launch) and prints PASS/FAIL.
+  - Verifies the result (the server launches and meaning search is on) and
+    prints PASS/FAIL.
 
 Nothing machine-specific is committed; it is all generated here from your own
 Python and paths. Pure standard library, so any machine that runs the system
@@ -360,20 +362,21 @@ def setup_kb() -> tuple[bool, bool]:
 # Server registration
 # --------------------------------------------------------------------------- #
 def build_servers(kb_ok: bool) -> dict:
-    """The system's own servers, with this machine's absolute paths."""
-    servers = {
+    """The system's one server, with this machine's absolute paths.
+
+    Since v3 the vault server also carries the knowledge-base tools and
+    meaning-based search. When the kb virtualenv works, the server runs under
+    that python so the semantic layer loads (hybrid search); otherwise it runs
+    under the system python and serves keyword-only search. Either way there
+    is exactly one server named "vault" — a separate "kb" entry is retired."""
+    command = str(venv_python(KB_DIR / ".venv")) if kb_ok else sys.executable
+    return {
         "vault": {
-            "command": sys.executable,
+            "command": command,
             "args": [str(VAULT_SERVER)],
             "env": {"VAULT_PATH": str(VAULT)},
         }
     }
-    if kb_ok:
-        servers["kb"] = {
-            "command": str(venv_python(KB_DIR / ".venv")),
-            "args": [str(KB_DIR / "server.py")],
-        }
-    return servers
 
 
 def _load(path: Path) -> dict:
@@ -410,6 +413,16 @@ def _points_at_missing(entry: dict) -> bool:
     return False
 
 
+def _is_retired(name: str, entry: dict) -> bool:
+    """True for system server entries this version no longer registers — the
+    standalone "kb" server merged into "vault" in v3. Only entries pointing
+    inside this vault's AI-Workshop are judged; user servers are never touched."""
+    if name != "kb":
+        return False
+    return any(str(AIW) in str(part)
+               for part in [entry.get("command", "")] + list(entry.get("args", [])))
+
+
 def _for_target(servers: dict, label: str) -> dict:
     """Claude Desktop doesn't load CLAUDE.md, so its `vault` server needs
     VAULT_MCP_INJECT_RULES=1 to receive the same rules Code and Claudian load
@@ -436,7 +449,8 @@ def register(servers: dict, include_desktop: bool) -> bool:
         mcp = data.get("mcpServers", {})
         removed = sorted(k for k in list(mcp)
                          if k not in block
-                         and isinstance(mcp[k], dict) and _points_at_missing(mcp[k]))
+                         and isinstance(mcp[k], dict)
+                         and (_points_at_missing(mcp[k]) or _is_retired(k, mcp[k])))
         for k in removed:
             del mcp[k]
         kept = sorted(k for k in mcp if k not in block)
@@ -604,21 +618,24 @@ def verify(servers: dict, kb_expected: bool, include_desktop: bool) -> bool:
             ok = False
 
     if not kb_expected:
-        print("  SKIP  kb server: set up without the knowledge base (--no-kb).")
-    elif "kb" not in servers:
-        _fail("kb server: not registered (its libraries didn't install).")
-        ok = False
+        print("  SKIP  knowledge base: set up without it (--no-kb).")
     else:
-        # Probe with the startup ingest scan pointed at an empty folder so the
-        # answer comes back fast; real ingestion runs when the app starts it.
-        empty = tempfile.mkdtemp(prefix="kb-probe-")
-        good, detail = _probe_server(servers["kb"], timeout=120,
-                                     extra_env={"KB_INGEST_PATHS": "", "KB_RESOURCES_PATH": empty})
+        # Since v3 the knowledge-base tools ride inside the vault server. The
+        # tool count says which mode it started in: 18 means meaning-based
+        # search loaded, 13 means it fell back to keyword-only. Probe with the
+        # ingest scan disabled so the answer comes back fast.
+        good, detail = _probe_server(servers["vault"], timeout=120,
+                                     extra_env={"KB_INGEST_PATHS": ""})
+        count = 0
         if good:
-            print("  PASS  kb server: launches and serves tools (%s)." % detail)
+            head = detail.split()[0]
+            count = int(head) if head.isdigit() else 0
+        if good and count >= 18:
+            print("  PASS  knowledge base: meaning search is on (%s)." % detail)
         else:
-            _fail("kb server: %s" % detail, update=_probe_fix(detail))
-        ok = ok and good
+            _fail("knowledge base: vault server is running keyword-only search (%s)." % detail,
+                  update=_probe_fix(detail))
+            ok = False
 
     # Entries that point at system files which no longer exist cannot work.
     for label, path in config_targets(include_desktop):

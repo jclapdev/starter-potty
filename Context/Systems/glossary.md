@@ -13,7 +13,7 @@ A focused background helper the AI hands a self-contained job to (for example, s
 
 ### connector / MCP
 
-An extra tool Claude can use, added through a small program called an MCP server. "Connector" is the app's word for it; "MCP" is the underlying standard. This system ships two: `vault` and `kb`. The installer (`AI-Workshop/install.py`) registers them in both Claude apps.
+An extra tool Claude can use, added through a small program called an MCP server. "Connector" is the app's word for it; "MCP" is the underlying standard. This system ships one: `vault`. The installer (`AI-Workshop/install.py`) registers it in both Claude apps.
 **Touches you:** when you add or build one, or when one "isn't showing up" (re-run the installer, then restart the app).
 
 ### hook
@@ -21,9 +21,9 @@ An extra tool Claude can use, added through a small program called an MCP server
 A small check that runs automatically whenever Claude writes a file — for example, flagging a broken link or an AI-language tell right away.
 **Touches you:** silently, on every file write. You only notice if it catches something.
 
-### kb connector
+### knowledge base (kb)
 
-The knowledge-base connector (`kb`). Adds search-by-meaning over your notes, on top of plain text search. Set up by default; skip it with `install.py --no-kb`.
+The search-by-meaning layer. Its tools are served through the `vault` connector (there is no separate `kb` connector). Set up by default; skip it with `install.py --no-kb`.
 **Touches you:** when you ask the AI to find notes by idea rather than exact words.
 
 ### map
